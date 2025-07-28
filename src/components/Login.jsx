@@ -11,7 +11,7 @@ const Login = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const backendUrl = 'https://uppalcrm-backend-mscu.onrender.com/api/auth/login';
+    const backendUrl = `${import.meta.env.VITE_API_URL}/api/auth/login`;
     try {
       const res = await axios.post(backendUrl, formData);
       localStorage.setItem('token', res.data.token);

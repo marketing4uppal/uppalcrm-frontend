@@ -23,7 +23,7 @@ const LeadForm = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const backendUrl = 'https://uppalcrm-backend-mscu.onrender.com/api/leads';
+    const backendUrl = `${import.meta.env.VITE_API_URL}/api/leads`;
     try {
       const res = await axios.post(backendUrl, formData);
       console.log('Lead created:', res.data);

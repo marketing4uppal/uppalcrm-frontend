@@ -7,7 +7,7 @@ const ContactList = () => {
 
   useEffect(() => {
     const fetchContacts = async () => {
-      const backendUrl = 'https://uppalcrm-backend-mscu.onrender.com/api/contacts';
+      const backendUrl = `${import.meta.env.VITE_API_URL}/api/contacts`;
       try {
         const res = await axios.get(backendUrl);
         setContacts(res.data);
