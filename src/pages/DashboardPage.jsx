@@ -1,19 +1,10 @@
-// src/pages/DashboardPage.jsx
-
-// ... (keep the import lines as they are) ...
-
-const DashboardPage = ({ user }) => {
-  console.log('User data on dashboard:', user); // <<< ADD THIS LINE
-  return (
-    // ... the rest of the file stays the same ...
-    // // src/pages/DashboardPage.jsx (Updated with Admin Link)
+// src/pages/DashboardPage.jsx (Correct Code)
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LeadList from '../components/LeadList';
 import LeadForm from '../components/LeadForm';
 import { Divider, Typography, Button, Box } from '@mui/material';
 
-// The 'user' object is now passed in as a prop from App.jsx
 const DashboardPage = ({ user }) => {
   return (
     <Box sx={{ p: 3 }}>
