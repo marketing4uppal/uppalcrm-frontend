@@ -1,4 +1,4 @@
-// src/components/Register.jsx (MUI Version)
+// src/components/Register.jsx (Updated for Organizations)
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Box, TextField, Button, Typography } from '@mui/material';
@@ -9,9 +9,10 @@ const Register = () => {
     lastName: '',
     email: '',
     password: '',
+    businessName: '', // <<< NEW
   });
 
-  const { firstName, lastName, email, password } = formData;
+  const { firstName, lastName, email, password, businessName } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -34,7 +35,9 @@ const Register = () => {
       onSubmit={onSubmit}
       sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
     >
-      <Typography variant="h6">Register New User</Typography>
+      <Typography variant="h6">Register New Business</Typography>
+      {/* NEW FIELD */}
+      <TextField label="Business Name" name="businessName" value={businessName} onChange={onChange} required size="small" />
       <TextField label="First Name" name="firstName" value={firstName} onChange={onChange} required size="small" />
       <TextField label="Last Name" name="lastName" value={lastName} onChange={onChange} required size="small" />
       <TextField label="Email Address" type="email" name="email" value={email} onChange={onChange} required size="small" />
