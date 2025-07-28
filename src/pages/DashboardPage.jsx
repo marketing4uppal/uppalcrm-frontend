@@ -1,4 +1,12 @@
-// src/pages/DashboardPage.jsx (Updated with Admin Link)
+// src/pages/DashboardPage.jsx
+
+// ... (keep the import lines as they are) ...
+
+const DashboardPage = ({ user }) => {
+  console.log('User data on dashboard:', user); // <<< ADD THIS LINE
+  return (
+    // ... the rest of the file stays the same ...
+    // // src/pages/DashboardPage.jsx (Updated with Admin Link)
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LeadList from '../components/LeadList';
