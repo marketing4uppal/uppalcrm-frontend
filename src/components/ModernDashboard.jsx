@@ -20,13 +20,15 @@ import {
   Target,
   Activity,
   Zap,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 
 const ModernDashboard = ({ user }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [notifications] = useState(3);
+const [showAddLeadForm, setShowAddLeadForm] = useState(false);
 
   // Sample stats - you'll replace these with real data from your API
   const stats = [
@@ -187,7 +189,10 @@ const ModernDashboard = ({ user }) => {
                 </button>
                 
                 <button 
-  onClick={() => setActiveTab('leads')}
+  onClick={() => {
+    setActiveTab('leads');
+    setShowAddLeadForm(true);
+  }}
   className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
 >
   <Plus className="w-4 h-4" />
@@ -237,34 +242,39 @@ const ModernDashboard = ({ user }) => {
           )}
 
           {activeTab === 'leads' && (
-  <div className="space-y-8">
-    {/* Lead Form and List in Leads Tab */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Lead Form Section */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+  <div className="space-y-6">
+    {showAddLeadForm ? (
+      // Show Add Lead Form
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 max-w-md mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">Add New Lead</h3>
-          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-            <Plus className="w-4 h-4 text-blue-600" />
-          </div>
+          <button 
+            onClick={() => setShowAddLeadForm(false)}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
         <LeadForm />
       </div>
-
-      {/* Lead List Section */}
+    ) : (
+      // Show All Leads List
       <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">All Leads</h3>
-          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-            <Users className="w-4 h-4 text-green-600" />
-          </div>
+          <button 
+            onClick={() => setShowAddLeadForm(true)}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Lead</span>
+          </button>
         </div>
         <LeadList />
       </div>
-    </div>
+    )}
   </div>
 )}
-
           {activeTab === 'deals' && (
             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
               <div className="text-center py-12">
