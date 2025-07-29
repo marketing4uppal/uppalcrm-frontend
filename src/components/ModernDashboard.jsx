@@ -136,8 +136,20 @@ const ModernDashboard = ({ user }) => {
           <div className="px-8 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-                <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your business.</p>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {activeTab === 'dashboard' ? 'Dashboard Overview' : 
+                   activeTab === 'leads' ? 'Lead Management' :
+                   activeTab === 'deals' ? 'Deal Pipeline' :
+                   activeTab === 'calendar' ? 'Calendar & Schedule' :
+                   activeTab === 'reports' ? 'Reports & Analytics' : 'Dashboard'}
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {activeTab === 'dashboard' ? "Welcome back! Here's what's happening with your business." :
+                   activeTab === 'leads' ? 'Manage and track all your leads in one place.' :
+                   activeTab === 'deals' ? 'Monitor your sales pipeline and close more deals.' :
+                   activeTab === 'calendar' ? 'Schedule and manage your appointments.' :
+                   activeTab === 'reports' ? 'Analyze your business performance and metrics.' : 'Welcome back!'}
+                </p>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -181,47 +193,123 @@ const ModernDashboard = ({ user }) => {
           </div>
         </header>
 
-        {/* Dashboard Content */}
+        {/* Dashboard Content - NOW WITH WORKING NAVIGATION */}
         <main className="p-8">
-          <div className="space-y-8">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {stats.map((stat, index) => (
-                <StatCard key={index} stat={stat} index={index} />
-              ))}
-            </div>
-
-            {/* Your existing components with modern styling */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Lead Form Section */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Add New Lead</h3>
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Plus className="w-4 h-4 text-blue-600" />
-                  </div>
-                </div>
-                {/* Your existing LeadForm will go here */}
-                <div className="text-gray-500 text-center py-8">
-                  <p>LeadForm component will be integrated here</p>
-                </div>
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8">
+              {/* Stats Grid - Only show on dashboard */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {stats.map((stat, index) => (
+                  <StatCard key={index} stat={stat} index={index} />
+                ))}
               </div>
 
-              {/* Lead List Section */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Recent Leads</h3>
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <Users className="w-4 h-4 text-green-600" />
+              {/* Your existing components with modern styling */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Lead Form Section */}
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Add New Lead</h3>
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Plus className="w-4 h-4 text-blue-600" />
+                    </div>
+                  </div>
+                  <div className="text-gray-500 text-center py-8">
+                    <p>LeadForm component will be integrated here</p>
                   </div>
                 </div>
-                {/* Your existing LeadList will go here */}
-                <div className="text-gray-500 text-center py-8">
-                  <p>LeadList component will be integrated here</p>
+
+                {/* Lead List Section */}
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Recent Leads</h3>
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <Users className="w-4 h-4 text-green-600" />
+                    </div>
+                  </div>
+                  <div className="text-gray-500 text-center py-8">
+                    <p>LeadList component will be integrated here</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {activeTab === 'leads' && (
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+              <div className="text-center py-12">
+                <Users className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Lead Management</h3>
+                <p className="text-gray-600 mb-8">Advanced lead management features coming soon...</p>
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <p className="text-gray-500">This section will include:</p>
+                  <ul className="text-gray-600 mt-2 space-y-1">
+                    <li>• Advanced lead filtering and search</li>
+                    <li>• Lead scoring and prioritization</li>
+                    <li>• Bulk lead operations</li>
+                    <li>• Lead assignment and routing</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'deals' && (
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+              <div className="text-center py-12">
+                <Target className="w-16 h-16 text-purple-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Deal Pipeline</h3>
+                <p className="text-gray-600 mb-8">Track your deals through the sales pipeline...</p>
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <p className="text-gray-500">This section will include:</p>
+                  <ul className="text-gray-600 mt-2 space-y-1">
+                    <li>• Visual pipeline management</li>
+                    <li>• Deal stage tracking</li>
+                    <li>• Revenue forecasting</li>
+                    <li>• Win/loss analysis</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'calendar' && (
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+              <div className="text-center py-12">
+                <Calendar className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Calendar & Schedule</h3>
+                <p className="text-gray-600 mb-8">Manage your appointments and meetings...</p>
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <p className="text-gray-500">This section will include:</p>
+                  <ul className="text-gray-600 mt-2 space-y-1">
+                    <li>• Appointment scheduling</li>
+                    <li>• Meeting management</li>
+                    <li>• Calendar integration</li>
+                    <li>• Reminder notifications</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+              <div className="text-center py-12">
+                <TrendingUp className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Reports & Analytics</h3>
+                <p className="text-gray-600 mb-8">Analyze your business performance...</p>
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <p className="text-gray-500">This section will include:</p>
+                  <ul className="text-gray-600 mt-2 space-y-1">
+                    <li>• Sales performance metrics</li>
+                    <li>• Lead conversion analytics</li>
+                    <li>• Revenue tracking</li>
+                    <li>• Custom report builder</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
