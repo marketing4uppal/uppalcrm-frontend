@@ -187,7 +187,7 @@ const ModernDashboard = ({ user }) => {
                 </button>
                 
                 <button 
-  onClick={() => setActiveTab('dashboard')}
+  onClick={() => setActiveTab('leads')}
   className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
 >
   <Plus className="w-4 h-4" />
@@ -237,23 +237,33 @@ const ModernDashboard = ({ user }) => {
           )}
 
           {activeTab === 'leads' && (
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-              <div className="text-center py-12">
-                <Users className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Lead Management</h3>
-                <p className="text-gray-600 mb-8">Advanced lead management features coming soon...</p>
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <p className="text-gray-500">This section will include:</p>
-                  <ul className="text-gray-600 mt-2 space-y-1">
-                    <li>• Advanced lead filtering and search</li>
-                    <li>• Lead scoring and prioritization</li>
-                    <li>• Bulk lead operations</li>
-                    <li>• Lead assignment and routing</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
+  <div className="space-y-8">
+    {/* Lead Form and List in Leads Tab */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Lead Form Section */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Add New Lead</h3>
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <Plus className="w-4 h-4 text-blue-600" />
+          </div>
+        </div>
+        <LeadForm />
+      </div>
+
+      {/* Lead List Section */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">All Leads</h3>
+          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+            <Users className="w-4 h-4 text-green-600" />
+          </div>
+        </div>
+        <LeadList />
+      </div>
+    </div>
+  </div>
+)}
 
           {activeTab === 'deals' && (
             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
