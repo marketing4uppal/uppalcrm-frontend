@@ -1,7 +1,7 @@
 // src/components/LeadList.jsx
-import LeadHistory from './LeadHistory';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import LeadHistory from './LeadHistory';
 import { 
   Users, 
   Mail, 
@@ -18,7 +18,8 @@ import {
   Tag,
   Calendar,
   Clock,
-  Eye
+  Eye,
+  X
 } from 'lucide-react';
 
 const LeadList = () => {
@@ -26,7 +27,7 @@ const LeadList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'kanban'
+  const [viewMode, setViewMode] = useState('table');
   const [selectedLead, setSelectedLead] = useState(null);
   const [showLeadDetail, setShowLeadDetail] = useState(false);
 
@@ -48,7 +49,6 @@ const LeadList = () => {
     fetchLeads();
   }, []);
 
-  // Filter leads based on search term
   const filteredLeads = leads.filter(lead =>
     lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,7 +107,6 @@ const LeadList = () => {
     }
   };
 
-  // Group leads by status for kanban view
   const groupedLeads = {
     'New': filteredLeads.filter(lead => !lead.leadStage || lead.leadStage === 'New'),
     'Contacted': filteredLeads.filter(lead => lead.leadStage === 'Contacted'),
@@ -145,7 +144,6 @@ const LeadList = () => {
 
   const TableView = () => (
     <div className="overflow-hidden">
-      {/* Table Header Controls */}
       <div className="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-t-xl">
         <div className="flex items-center space-x-4">
           <span className="text-sm text-gray-600">All leads ({filteredLeads.length})</span>
@@ -168,7 +166,6 @@ const LeadList = () => {
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
@@ -219,13 +216,13 @@ const LeadList = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredLeads.map((lead) => (
               <tr 
-  key={lead._id} 
-  className="hover:bg-gray-50 transition-colors cursor-pointer"
-  onClick={() => {
-    setSelectedLead(lead);
-    setShowLeadDetail(true);
-  }}
->
+                key={lead._id} 
+                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                onClick={() => {
+                  setSelectedLead(lead);
+                  setShowLeadDetail(true);
+                }}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3">
@@ -279,7 +276,8 @@ const LeadList = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center space-x-2">
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setSelectedLead(lead);
                         setShowLeadDetail(true);
                       }}
@@ -288,13 +286,22 @@ const LeadList = () => {
                     >
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                    <button 
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                    >
                       <Phone className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-green-600 hover:bg-green-50 rounded">
+                    <button 
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 text-green-600 hover:bg-green-50 rounded"
+                    >
                       <Mail className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-gray-600 hover:bg-gray-50 rounded">
+                    <button 
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 text-gray-600 hover:bg-gray-50 rounded"
+                    >
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </div>
@@ -305,7 +312,6 @@ const LeadList = () => {
         </table>
       </div>
 
-      {/* Table Footer */}
       <div className="flex items-center justify-between px-6 py-3 bg-gray-50 border-t border-gray-200 rounded-b-xl">
         <div className="text-sm text-gray-500">
           Showing 1-{filteredLeads.length} of {filteredLeads.length}
@@ -329,13 +335,21 @@ const LeadList = () => {
           </div>
           <div className="space-y-3">
             {statusLeads.map((lead) => (
-              <div key={lead._id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div 
+                key={lead._id} 
+                className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => {
+                  setSelectedLead(lead);
+                  setShowLeadDetail(true);
+                }}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                     {lead.firstName[0]}{lead.lastName[0]}
                   </div>
                   <button 
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedLead(lead);
                       setShowLeadDetail(true);
                     }}
@@ -364,14 +378,6 @@ const LeadList = () => {
                     <div>Modified: {getTimeAgo(lead.updatedAt)}</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-gray-100">
-                  <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
-                    <Phone className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-green-600 hover:bg-green-50 rounded">
-                    <Mail className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
             ))}
             {statusLeads.length === 0 && (
@@ -388,7 +394,6 @@ const LeadList = () => {
 
   return (
     <div className="w-full">
-      {/* View Toggle Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -421,7 +426,6 @@ const LeadList = () => {
         </div>
       </div>
 
-      {/* Content */}
       {filteredLeads.length === 0 ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -440,7 +444,6 @@ const LeadList = () => {
         </>
       )}
 
-      {/* Lead Detail Modal - Placeholder for now */}
       {showLeadDetail && selectedLead && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
@@ -450,7 +453,7 @@ const LeadList = () => {
                 onClick={() => setShowLeadDetail(false)}
                 className="p-2 text-gray-400 hover:text-gray-600"
               >
-                ×
+                <X className="w-5 h-5" />
               </button>
             </div>
             
@@ -483,9 +486,8 @@ const LeadList = () => {
               </div>
               
               <div className="border-t pt-4 mt-6">
-  <h4 className="font-medium text-gray-900 mb-3">History</h4>
-  <LeadHistory leadId={selectedLead._id} />
-</div>
+                <h4 className="font-medium text-gray-900 mb-3">History</h4>
+                <LeadHistory leadId={selectedLead._id} />
               </div>
             </div>
           </div>
