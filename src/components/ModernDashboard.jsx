@@ -186,10 +186,13 @@ const ModernDashboard = ({ user }) => {
                   )}
                 </button>
                 
-                <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Add Lead</span>
-                </button>
+                <button 
+  onClick={() => setActiveTab('dashboard')}
+  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
+>
+  <Plus className="w-4 h-4" />
+  <span>Add Lead</span>
+</button>
               </div>
             </div>
           </div>
