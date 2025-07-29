@@ -1,4 +1,5 @@
 // src/components/ModernDashboard.jsx
+import ContactList from './ContactList';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LeadForm from './LeadForm';
@@ -28,7 +29,7 @@ const ModernDashboard = ({ user }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [notifications] = useState(3);
-const [showAddLeadForm, setShowAddLeadForm] = useState(false);
+  const [showAddLeadForm, setShowAddLeadForm] = useState(false);
 
   // Sample stats - you'll replace these with real data from your API
   const stats = [
@@ -82,14 +83,14 @@ const [showAddLeadForm, setShowAddLeadForm] = useState(false);
           </div>
           
           <nav className="space-y-2">
-  {[
-  { id: 'dashboard', label: 'Dashboard', icon: Activity },
-  { id: 'leads', label: 'Leads', icon: Users },
-  { id: 'contacts', label: 'Contacts', icon: Phone },
-  { id: 'deals', label: 'Deals', icon: Target },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'reports', label: 'Reports', icon: TrendingUp }
-].map((item) => {
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: Activity },
+              { id: 'leads', label: 'Leads', icon: Users },
+              { id: 'contacts', label: 'Contacts', icon: Phone },
+              { id: 'deals', label: 'Deals', icon: Target },
+              { id: 'calendar', label: 'Calendar', icon: Calendar },
+              { id: 'reports', label: 'Reports', icon: TrendingUp }
+            ].map((item) => {
               const Icon = item.icon;
               return (
                 <button
@@ -142,21 +143,21 @@ const [showAddLeadForm, setShowAddLeadForm] = useState(false);
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-  {activeTab === 'dashboard' ? 'Dashboard Overview' : 
-   activeTab === 'leads' ? 'Lead Management' :
-   activeTab === 'contacts' ? 'Contact Management' :
-   activeTab === 'deals' ? 'Deal Pipeline' :
-   activeTab === 'calendar' ? 'Calendar & Schedule' :
-   activeTab === 'reports' ? 'Reports & Analytics' : 'Dashboard'}
-</h2>
-<p className="text-gray-600 mt-1">
-  {activeTab === 'dashboard' ? "Welcome back! Here's what's happening with your business." :
-   activeTab === 'leads' ? 'Manage and track all your leads in one place.' :
-   activeTab === 'contacts' ? 'Manage all your contacts and their information.' :
-   activeTab === 'deals' ? 'Monitor your sales pipeline and close more deals.' :
-   activeTab === 'calendar' ? 'Schedule and manage your appointments.' :
-   activeTab === 'reports' ? 'Analyze your business performance and metrics.' : 'Welcome back!'}
-</p>
+                  {activeTab === 'dashboard' ? 'Dashboard Overview' : 
+                   activeTab === 'leads' ? 'Lead Management' :
+                   activeTab === 'contacts' ? 'Contact Management' :
+                   activeTab === 'deals' ? 'Deal Pipeline' :
+                   activeTab === 'calendar' ? 'Calendar & Schedule' :
+                   activeTab === 'reports' ? 'Reports & Analytics' : 'Dashboard'}
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {activeTab === 'dashboard' ? "Welcome back! Here's what's happening with your business." :
+                   activeTab === 'leads' ? 'Manage and track all your leads in one place.' :
+                   activeTab === 'contacts' ? 'Manage all your contacts and their information.' :
+                   activeTab === 'deals' ? 'Monitor your sales pipeline and close more deals.' :
+                   activeTab === 'calendar' ? 'Schedule and manage your appointments.' :
+                   activeTab === 'reports' ? 'Analyze your business performance and metrics.' : 'Welcome back!'}
+                </p>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -192,21 +193,21 @@ const [showAddLeadForm, setShowAddLeadForm] = useState(false);
                 </button>
                 
                 <button 
-  onClick={() => {
-    setActiveTab('leads');
-    setShowAddLeadForm(true);
-  }}
-  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
->
-  <Plus className="w-4 h-4" />
-  <span>Add Lead</span>
-</button>
+                  onClick={() => {
+                    setActiveTab('leads');
+                    setShowAddLeadForm(true);
+                  }}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Lead</span>
+                </button>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Dashboard Content - NOW WITH REAL COMPONENTS */}
+        {/* Dashboard Content */}
         <main className="p-8">
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
@@ -245,58 +246,47 @@ const [showAddLeadForm, setShowAddLeadForm] = useState(false);
           )}
 
           {activeTab === 'leads' && (
-  <div className="space-y-6">
-    {showAddLeadForm ? (
-      // Show Add Lead Form
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 max-w-md mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Add New Lead</h3>
-          <button 
-            onClick={() => setShowAddLeadForm(false)}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-        <LeadForm />
-      </div>
-    ) : (
-      // Show All Leads List
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">All Leads</h3>
-          <button 
-            onClick={() => setShowAddLeadForm(true)}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Lead</span>
-          </button>
-        </div>
-        <LeadList />
-      </div>
-    )}
-  </div>
-)}
+            <div className="space-y-6">
+              {showAddLeadForm ? (
+                // Show Add Lead Form
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 max-w-md mx-auto">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">Add New Lead</h3>
+                    <button 
+                      onClick={() => setShowAddLeadForm(false)}
+                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <LeadForm />
+                </div>
+              ) : (
+                // Show All Leads List
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900">All Leads</h3>
+                    <button 
+                      onClick={() => setShowAddLeadForm(true)}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add Lead</span>
+                    </button>
+                  </div>
+                  <LeadList />
+                </div>
+              )}
+            </div>
+          )}
           
-   {activeTab === 'contacts' && (
-  <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-    <div className="text-center py-12">
-      <Phone className="w-16 h-16 text-green-500 mx-auto mb-4" />
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">Contact Management</h3>
-      <p className="text-gray-600 mb-8">View and manage all your contacts...</p>
-      <div className="bg-gray-50 rounded-xl p-6">
-        <p className="text-gray-500">This section will include:</p>
-        <ul className="text-gray-600 mt-2 space-y-1">
-          <li>• All contacts created from leads</li>
-          <li>• Contact details and communication history</li>
-          <li>• Contact organization and tagging</li>
-          <li>• Contact import/export features</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-)}       
+          {activeTab === 'contacts' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <ContactList />
+              </div>
+            </div>
+          )}       
           
           {activeTab === 'deals' && (
             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
