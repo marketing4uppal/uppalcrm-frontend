@@ -218,7 +218,7 @@ const LeadList = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredLeads.map((lead) => (
-              <<tr 
+              <tr 
   key={lead._id} 
   className="hover:bg-gray-50 transition-colors cursor-pointer"
   onClick={() => {
