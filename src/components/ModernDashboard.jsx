@@ -1,6 +1,8 @@
 // src/components/ModernDashboard.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import LeadForm from './LeadForm';
+import LeadList from './LeadList';
 import { 
   Users, 
   TrendingUp, 
@@ -193,7 +195,7 @@ const ModernDashboard = ({ user }) => {
           </div>
         </header>
 
-        {/* Dashboard Content - NOW WITH WORKING NAVIGATION */}
+        {/* Dashboard Content - NOW WITH REAL COMPONENTS */}
         <main className="p-8">
           {activeTab === 'dashboard' && (
             <div className="space-y-8">
@@ -214,9 +216,7 @@ const ModernDashboard = ({ user }) => {
                       <Plus className="w-4 h-4 text-blue-600" />
                     </div>
                   </div>
-                  <div className="text-gray-500 text-center py-8">
-                    <p>LeadForm component will be integrated here</p>
-                  </div>
+                  <LeadForm />
                 </div>
 
                 {/* Lead List Section */}
@@ -227,9 +227,7 @@ const ModernDashboard = ({ user }) => {
                       <Users className="w-4 h-4 text-green-600" />
                     </div>
                   </div>
-                  <div className="text-gray-500 text-center py-8">
-                    <p>LeadList component will be integrated here</p>
-                  </div>
+                  <LeadList />
                 </div>
               </div>
             </div>
