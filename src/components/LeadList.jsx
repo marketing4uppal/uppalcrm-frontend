@@ -218,7 +218,14 @@ const LeadList = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredLeads.map((lead) => (
-              <tr key={lead._id} className="hover:bg-gray-50 transition-colors">
+              <<tr 
+  key={lead._id} 
+  className="hover:bg-gray-50 transition-colors cursor-pointer"
+  onClick={() => {
+    setSelectedLead(lead);
+    setShowLeadDetail(true);
+  }}
+>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3">
