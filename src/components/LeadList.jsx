@@ -14,7 +14,10 @@ import {
   Columns,
   ChevronDown,
   Building,
-  Tag
+  Tag,
+  Calendar,
+  Clock,
+  Eye
 } from 'lucide-react';
 
 const LeadList = () => {
@@ -23,6 +26,8 @@ const LeadList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'kanban'
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [showLeadDetail, setShowLeadDetail] = useState(false);
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -71,12 +76,43 @@ const LeadList = () => {
     ).join(' ');
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTimeAgo = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now - date;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else {
+      return `${diffInDays}d ago`;
+    }
+  };
+
   // Group leads by status for kanban view
   const groupedLeads = {
-    'New': filteredLeads.filter(lead => !lead.status || lead.status === 'new'),
-    'Qualified': filteredLeads.filter(lead => lead.status === 'qualified'),
-    'Contacted': filteredLeads.filter(lead => lead.status === 'contacted'),
-    'Won': filteredLeads.filter(lead => lead.status === 'won')
+    'New': filteredLeads.filter(lead => !lead.leadStage || lead.leadStage === 'New'),
+    'Contacted': filteredLeads.filter(lead => lead.leadStage === 'Contacted'),
+    'Qualified': filteredLeads.filter(lead => lead.leadStage === 'Qualified'),
+    'Won': filteredLeads.filter(lead => lead.leadStage === 'Won'),
+    'Lost': filteredLeads.filter(lead => lead.leadStage === 'Lost')
   };
 
   if (loading) {
@@ -161,6 +197,20 @@ const LeadList = () => {
                 </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center space-x-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>Created</span>
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center space-x-1">
+                  <Clock className="w-4 h-4" />
+                  <span>Modified</span>
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -177,6 +227,9 @@ const LeadList = () => {
                       <div className="font-medium text-gray-900">
                         {lead.firstName} {lead.lastName}
                       </div>
+                      {lead.leadStage && (
+                        <div className="text-xs text-gray-500">{lead.leadStage}</div>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -203,8 +256,30 @@ const LeadList = () => {
                     </span>
                   )}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <div>
+                    <div className="font-medium">{formatDate(lead.createdAt)}</div>
+                    <div className="text-xs text-gray-400">{getTimeAgo(lead.createdAt)}</div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <div>
+                    <div className="font-medium">{formatDate(lead.updatedAt)}</div>
+                    <div className="text-xs text-gray-400">{getTimeAgo(lead.updatedAt)}</div>
+                  </div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center space-x-2">
+                    <button 
+                      onClick={() => {
+                        setSelectedLead(lead);
+                        setShowLeadDetail(true);
+                      }}
+                      className="p-1 text-purple-600 hover:bg-purple-50 rounded"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
                     <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
                       <Phone className="w-4 h-4" />
                     </button>
@@ -235,7 +310,7 @@ const LeadList = () => {
   );
 
   const KanbanView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       {Object.entries(groupedLeads).map(([status, statusLeads]) => (
         <div key={status} className="bg-gray-50 rounded-xl p-4">
           <div className="flex items-center justify-between mb-4">
@@ -251,8 +326,14 @@ const LeadList = () => {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                     {lead.firstName[0]}{lead.lastName[0]}
                   </div>
-                  <button className="p-1 text-gray-400 hover:text-gray-600">
-                    <MoreVertical className="w-4 h-4" />
+                  <button 
+                    onClick={() => {
+                      setSelectedLead(lead);
+                      setShowLeadDetail(true);
+                    }}
+                    className="p-1 text-gray-400 hover:text-gray-600"
+                  >
+                    <Eye className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="mb-3">
@@ -264,11 +345,17 @@ const LeadList = () => {
                     <p className="text-sm text-gray-600">{lead.phone}</p>
                   )}
                 </div>
-                {lead.leadSource && (
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getSourceBadgeColor(lead.leadSource)}`}>
-                    {formatSource(lead.leadSource)}
-                  </span>
-                )}
+                <div className="space-y-2">
+                  {lead.leadSource && (
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getSourceBadgeColor(lead.leadSource)}`}>
+                      {formatSource(lead.leadSource)}
+                    </span>
+                  )}
+                  <div className="text-xs text-gray-500">
+                    <div>Created: {getTimeAgo(lead.createdAt)}</div>
+                    <div>Modified: {getTimeAgo(lead.updatedAt)}</div>
+                  </div>
+                </div>
                 <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-gray-100">
                   <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
                     <Phone className="w-4 h-4" />
@@ -343,6 +430,59 @@ const LeadList = () => {
         <>
           {viewMode === 'table' ? <TableView /> : <KanbanView />}
         </>
+      )}
+
+      {/* Lead Detail Modal - Placeholder for now */}
+      {showLeadDetail && selectedLead && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold">Lead Details</h3>
+              <button 
+                onClick={() => setShowLeadDetail(false)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Name</label>
+                  <p className="text-gray-900">{selectedLead.firstName} {selectedLead.lastName}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <p className="text-gray-900">{selectedLead.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Phone</label>
+                  <p className="text-gray-900">{selectedLead.phone || '-'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Source</label>
+                  <p className="text-gray-900">{formatSource(selectedLead.leadSource)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created</label>
+                  <p className="text-gray-900">{formatDate(selectedLead.createdAt)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Last Modified</label>
+                  <p className="text-gray-900">{formatDate(selectedLead.updatedAt)}</p>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4 mt-6">
+                <h4 className="font-medium text-gray-900 mb-3">History</h4>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-500 text-center">Lead history tracking will be implemented here</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
