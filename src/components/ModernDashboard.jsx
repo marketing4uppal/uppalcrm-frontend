@@ -82,13 +82,14 @@ const [showAddLeadForm, setShowAddLeadForm] = useState(false);
           </div>
           
           <nav className="space-y-2">
-            {[
-              { id: 'dashboard', label: 'Dashboard', icon: Activity },
-              { id: 'leads', label: 'Leads', icon: Users },
-              { id: 'deals', label: 'Deals', icon: Target },
-              { id: 'calendar', label: 'Calendar', icon: Calendar },
-              { id: 'reports', label: 'Reports', icon: TrendingUp }
-            ].map((item) => {
+  {[
+  { id: 'dashboard', label: 'Dashboard', icon: Activity },
+  { id: 'leads', label: 'Leads', icon: Users },
+  { id: 'contacts', label: 'Contacts', icon: Phone },
+  { id: 'deals', label: 'Deals', icon: Target },
+  { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'reports', label: 'Reports', icon: TrendingUp }
+].map((item) => {
               const Icon = item.icon;
               return (
                 <button
@@ -141,19 +142,21 @@ const [showAddLeadForm, setShowAddLeadForm] = useState(false);
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {activeTab === 'dashboard' ? 'Dashboard Overview' : 
-                   activeTab === 'leads' ? 'Lead Management' :
-                   activeTab === 'deals' ? 'Deal Pipeline' :
-                   activeTab === 'calendar' ? 'Calendar & Schedule' :
-                   activeTab === 'reports' ? 'Reports & Analytics' : 'Dashboard'}
-                </h2>
-                <p className="text-gray-600 mt-1">
-                  {activeTab === 'dashboard' ? "Welcome back! Here's what's happening with your business." :
-                   activeTab === 'leads' ? 'Manage and track all your leads in one place.' :
-                   activeTab === 'deals' ? 'Monitor your sales pipeline and close more deals.' :
-                   activeTab === 'calendar' ? 'Schedule and manage your appointments.' :
-                   activeTab === 'reports' ? 'Analyze your business performance and metrics.' : 'Welcome back!'}
-                </p>
+  {activeTab === 'dashboard' ? 'Dashboard Overview' : 
+   activeTab === 'leads' ? 'Lead Management' :
+   activeTab === 'contacts' ? 'Contact Management' :
+   activeTab === 'deals' ? 'Deal Pipeline' :
+   activeTab === 'calendar' ? 'Calendar & Schedule' :
+   activeTab === 'reports' ? 'Reports & Analytics' : 'Dashboard'}
+</h2>
+<p className="text-gray-600 mt-1">
+  {activeTab === 'dashboard' ? "Welcome back! Here's what's happening with your business." :
+   activeTab === 'leads' ? 'Manage and track all your leads in one place.' :
+   activeTab === 'contacts' ? 'Manage all your contacts and their information.' :
+   activeTab === 'deals' ? 'Monitor your sales pipeline and close more deals.' :
+   activeTab === 'calendar' ? 'Schedule and manage your appointments.' :
+   activeTab === 'reports' ? 'Analyze your business performance and metrics.' : 'Welcome back!'}
+</p>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -275,6 +278,26 @@ const [showAddLeadForm, setShowAddLeadForm] = useState(false);
     )}
   </div>
 )}
+          
+   {activeTab === 'contacts' && (
+  <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+    <div className="text-center py-12">
+      <Phone className="w-16 h-16 text-green-500 mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">Contact Management</h3>
+      <p className="text-gray-600 mb-8">View and manage all your contacts...</p>
+      <div className="bg-gray-50 rounded-xl p-6">
+        <p className="text-gray-500">This section will include:</p>
+        <ul className="text-gray-600 mt-2 space-y-1">
+          <li>• All contacts created from leads</li>
+          <li>• Contact details and communication history</li>
+          <li>• Contact organization and tagging</li>
+          <li>• Contact import/export features</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+)}       
+          
           {activeTab === 'deals' && (
             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
               <div className="text-center py-12">
