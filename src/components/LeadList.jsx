@@ -1,4 +1,5 @@
 // src/components/LeadList.jsx
+import LeadHistory from './LeadHistory';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
@@ -475,10 +476,9 @@ const LeadList = () => {
               </div>
               
               <div className="border-t pt-4 mt-6">
-                <h4 className="font-medium text-gray-900 mb-3">History</h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-500 text-center">Lead history tracking will be implemented here</p>
-                </div>
+  <h4 className="font-medium text-gray-900 mb-3">History</h4>
+  <LeadHistory leadId={selectedLead._id} />
+</div>
               </div>
             </div>
           </div>
