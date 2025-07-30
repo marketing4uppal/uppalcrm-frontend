@@ -8,13 +8,14 @@ const EditContact = ({ contact, onClose, onUpdate }) => {
     firstName: contact.firstName || '',
     lastName: contact.lastName || '',
     email: contact.email || '',
-    phone: contact.phone || ''
+    phone: contact.phone || '',
+    leadId: contact.leadId || ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
-  const { firstName, lastName, email, phone } = formData;
+  const { firstName, lastName, email, phone, leadId } = formData;
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -157,6 +158,22 @@ const EditContact = ({ contact, onClose, onUpdate }) => {
             </div>
           </div>
 
+          {/* Lead ID (read-only in this case) */}
+          <div>
+            <label className={labelClass}>Associated Lead ID</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                name="leadId"
+                value={leadId}
+                onChange={onChange}
+                placeholder="Lead ID (optional)"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
           {/* Submit Button */}
           <div className="flex space-x-3 pt-4">
             <button
@@ -172,7 +189,7 @@ const EditContact = ({ contact, onClose, onUpdate }) => {
               className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
                 isSubmitting
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:shadow-lg text-white transform hover:scale-105'
+                  : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg text-white transform hover:scale-105'
               }`}
             >
               {isSubmitting ? (

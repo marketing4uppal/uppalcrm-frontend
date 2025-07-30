@@ -1,9 +1,9 @@
 // src/components/LeadTableRow.jsx
 import React from 'react';
-import { Mail, Phone, Eye, MoreVertical } from 'lucide-react';
+import { Mail, Phone, Eye, MoreVertical, Edit } from 'lucide-react';
 import { getSourceBadgeColor, formatSource, formatDate, getTimeAgo } from '../utils/leadUtils';
 
-const LeadTableRow = ({ lead, onLeadSelect }) => {
+const LeadTableRow = ({ lead, onLeadSelect, onEditLead }) => {
   return (
     <tr 
       className="hover:bg-gray-50 transition-colors cursor-pointer"
@@ -72,20 +72,33 @@ const LeadTableRow = ({ lead, onLeadSelect }) => {
             <Eye className="w-4 h-4" />
           </button>
           <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditLead(lead);
+            }}
+            className="p-1 text-orange-600 hover:bg-orange-50 rounded"
+            title="Edit Lead"
+          >
+            <Edit className="w-4 h-4" />
+          </button>
+          <button 
             onClick={(e) => e.stopPropagation()}
             className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+            title="Call"
           >
             <Phone className="w-4 h-4" />
           </button>
           <button 
             onClick={(e) => e.stopPropagation()}
             className="p-1 text-green-600 hover:bg-green-50 rounded"
+            title="Email"
           >
             <Mail className="w-4 h-4" />
           </button>
           <button 
             onClick={(e) => e.stopPropagation()}
             className="p-1 text-gray-600 hover:bg-gray-50 rounded"
+            title="More Options"
           >
             <MoreVertical className="w-4 h-4" />
           </button>

@@ -1,21 +1,32 @@
 // src/components/LeadDetailModal.jsx
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Edit } from 'lucide-react';
 import LeadHistory from './LeadHistory';
 import { formatSource, formatDate } from '../utils/leadUtils';
 
-const LeadDetailModal = ({ lead, onClose }) => {
+const LeadDetailModal = ({ lead, onClose, onEdit }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold">Lead Details</h3>
-          <button 
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-2">
+            {onEdit && (
+              <button 
+                onClick={onEdit}
+                className="p-2 text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded-lg transition-colors"
+                title="Edit Lead"
+              >
+                <Edit className="w-5 h-5" />
+              </button>
+            )}
+            <button 
+              onClick={onClose}
+              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         
         <div className="space-y-4">

@@ -3,7 +3,7 @@ import React from 'react';
 import { Search, Filter, ChevronDown, Calendar, Clock } from 'lucide-react';
 import LeadTableRow from './LeadTableRow';
 
-const LeadTableView = ({ leads, searchTerm, onSearchChange, onLeadSelect }) => {
+const LeadTableView = ({ leads, searchTerm, onSearchChange, onLeadSelect, onEditLead }) => {
   return (
     <div className="overflow-hidden">
       <div className="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-t-xl">
@@ -81,6 +81,7 @@ const LeadTableView = ({ leads, searchTerm, onSearchChange, onLeadSelect }) => {
                 key={lead._id} 
                 lead={lead} 
                 onLeadSelect={onLeadSelect}
+                onEditLead={onEditLead}
               />
             ))}
           </tbody>

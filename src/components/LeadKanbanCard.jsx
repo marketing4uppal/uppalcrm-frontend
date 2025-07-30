@@ -1,9 +1,9 @@
 // src/components/LeadKanbanCard.jsx
 import React from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, Edit } from 'lucide-react';
 import { getSourceBadgeColor, formatSource, getTimeAgo } from '../utils/leadUtils';
 
-const LeadKanbanCard = ({ lead, onLeadSelect }) => {
+const LeadKanbanCard = ({ lead, onLeadSelect, onEditLead }) => {
   return (
     <div 
       className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
@@ -13,15 +13,28 @@ const LeadKanbanCard = ({ lead, onLeadSelect }) => {
         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
           {lead.firstName[0]}{lead.lastName[0]}
         </div>
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onLeadSelect(lead);
-          }}
-          className="p-1 text-gray-400 hover:text-gray-600"
-        >
-          <Eye className="w-4 h-4" />
-        </button>
+        <div className="flex space-x-1">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onLeadSelect(lead);
+            }}
+            className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+            title="View Details"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditLead(lead);
+            }}
+            className="p-1 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded"
+            title="Edit Lead"
+          >
+            <Edit className="w-4 h-4" />
+          </button>
+        </div>
       </div>
       <div className="mb-3">
         <h4 className="font-medium text-gray-900 mb-1">

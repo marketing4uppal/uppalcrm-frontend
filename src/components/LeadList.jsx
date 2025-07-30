@@ -5,6 +5,7 @@ import { Table, Columns } from 'lucide-react';
 import LeadTableView from './LeadTableView';
 import LeadKanbanView from './LeadKanbanView';
 import LeadDetailModal from './LeadDetailModal';
+import EditLead from './EditLead';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import EmptyState from './EmptyState';
@@ -17,6 +18,8 @@ const LeadList = () => {
   const [viewMode, setViewMode] = useState('table');
   const [selectedLead, setSelectedLead] = useState(null);
   const [showLeadDetail, setShowLeadDetail] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [showEditLead, setShowEditLead] = useState(false);
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -52,6 +55,30 @@ const LeadList = () => {
   const handleCloseDetail = () => {
     setShowLeadDetail(false);
     setSelectedLead(null);
+  };
+
+  const handleEditLead = (lead) => {
+    setEditingLead(lead);
+    setShowEditLead(true);
+  };
+
+  const handleCloseEdit = () => {
+    setShowEditLead(false);
+    setEditingLead(null);
+  };
+
+  const handleLeadUpdate = (updatedLead) => {
+    // Update the lead in the local state
+    setLeads(prevLeads => 
+      prevLeads.map(lead => 
+        lead._id === updatedLead._id ? updatedLead : lead
+      )
+    );
+    
+    // Also update selectedLead if it's the same lead
+    if (selectedLead && selectedLead._id === updatedLead._id) {
+      setSelectedLead(updatedLead);
+    }
   };
 
   if (loading) {
@@ -106,20 +133,36 @@ const LeadList = () => {
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
               onLeadSelect={handleLeadSelect}
+              onEditLead={handleEditLead}
             />
           ) : (
             <LeadKanbanView 
               leads={filteredLeads}
               onLeadSelect={handleLeadSelect}
+              onEditLead={handleEditLead}
             />
           )}
         </>
       )}
 
+      {/* Lead Detail Modal */}
       {showLeadDetail && selectedLead && (
         <LeadDetailModal 
           lead={selectedLead}
           onClose={handleCloseDetail}
+          onEdit={() => {
+            handleCloseDetail();
+            handleEditLead(selectedLead);
+          }}
+        />
+      )}
+
+      {/* Edit Lead Modal */}
+      {showEditLead && editingLead && (
+        <EditLead 
+          lead={editingLead}
+          onClose={handleCloseEdit}
+          onUpdate={handleLeadUpdate}
         />
       )}
     </div>

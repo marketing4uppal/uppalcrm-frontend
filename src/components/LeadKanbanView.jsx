@@ -2,7 +2,7 @@
 import React from 'react';
 import LeadKanbanColumn from './LeadKanbanColumn';
 
-const LeadKanbanView = ({ leads, onLeadSelect }) => {
+const LeadKanbanView = ({ leads, onLeadSelect, onEditLead }) => {
   const groupedLeads = {
     'New': leads.filter(lead => !lead.leadStage || lead.leadStage === 'New'),
     'Contacted': leads.filter(lead => lead.leadStage === 'Contacted'),
@@ -19,6 +19,7 @@ const LeadKanbanView = ({ leads, onLeadSelect }) => {
           status={status}
           leads={statusLeads}
           onLeadSelect={onLeadSelect}
+          onEditLead={onEditLead}
         />
       ))}
     </div>

@@ -1,6 +1,7 @@
 // src/components/ContactList.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import EditContact from './EditContact';
 import { 
   Users, 
   Mail, 
@@ -10,7 +11,9 @@ import {
   MoreVertical, 
   UserPlus,
   Building,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Edit,
+  Eye
 } from 'lucide-react';
 
 const ContactList = () => {
@@ -18,6 +21,8 @@ const ContactList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
+  const [editingContact, setEditingContact] = useState(null);
+  const [showEditContact, setShowEditContact] = useState(false);
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -44,6 +49,25 @@ const ContactList = () => {
     contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (contact.phone && contact.phone.includes(searchTerm))
   );
+
+  const handleEditContact = (contact) => {
+    setEditingContact(contact);
+    setShowEditContact(true);
+  };
+
+  const handleCloseEdit = () => {
+    setShowEditContact(false);
+    setEditingContact(null);
+  };
+
+  const handleContactUpdate = (updatedContact) => {
+    // Update the contact in the local state
+    setContacts(prevContacts => 
+      prevContacts.map(contact => 
+        contact._id === updatedContact._id ? updatedContact : contact
+      )
+    );
+  };
 
   if (loading) {
     return (
@@ -180,13 +204,29 @@ const ContactList = () => {
                   {/* Actions */}
                   <div className="col-span-2">
                     <div className="flex items-center space-x-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => handleEditContact(contact)}
+                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                        title="Edit Contact"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button 
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Call"
+                      >
                         <Phone className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
+                      <button 
+                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Email"
+                      >
                         <Mail className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                      <button 
+                        className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                        title="More Options"
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </div>
@@ -204,6 +244,15 @@ const ContactList = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Contact Modal */}
+      {showEditContact && editingContact && (
+        <EditContact 
+          contact={editingContact}
+          onClose={handleCloseEdit}
+          onUpdate={handleContactUpdate}
+        />
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import React from 'react';
 import { UserPlus } from 'lucide-react';
 import LeadKanbanCard from './LeadKanbanCard';
 
-const LeadKanbanColumn = ({ status, leads, onLeadSelect }) => {
+const LeadKanbanColumn = ({ status, leads, onLeadSelect, onEditLead }) => {
   return (
     <div className="bg-gray-50 rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
@@ -18,6 +18,7 @@ const LeadKanbanColumn = ({ status, leads, onLeadSelect }) => {
             key={lead._id}
             lead={lead}
             onLeadSelect={onLeadSelect}
+            onEditLead={onEditLead}
           />
         ))}
         {leads.length === 0 && (
