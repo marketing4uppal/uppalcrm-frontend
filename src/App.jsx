@@ -69,16 +69,16 @@ function App() {
           </PrivateRoute>
         }
       />
-        <Route
-          path="/admin"
-          element={
-            <PrivateRoute>
-              <AdminRoute user={user}>
-                <AdminPage />
-              </AdminRoute>
-            </PrivateRoute>
-          }
-        />
+    <Route
+  path="/admin"
+  element={
+    <PrivateRoute>
+      <AdminRoute user={user}>
+        <AdminPage />
+      </AdminRoute>
+    </PrivateRoute>
+  }
+/>
       </Routes>
     </Router>
   );

@@ -173,7 +173,7 @@ const ModernDashboard = ({ user }) => {
                 </div>
                 
                 {/* Show Admin Panel link only if user is an admin */}
-                {user && user.role === 'admin' && (
+                {user?.role === 'admin' && (
                   <Link 
                     to="/admin"
                     className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
