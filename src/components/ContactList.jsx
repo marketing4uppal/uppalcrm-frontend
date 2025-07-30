@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import EditContact from './EditContact';
+import ContactDetailModal from './ContactDetailModal';
 import { 
   Users, 
   Mail, 
@@ -23,6 +24,8 @@ const ContactList = () => {
   const [error, setError] = useState(null);
   const [editingContact, setEditingContact] = useState(null);
   const [showEditContact, setShowEditContact] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [showContactDetail, setShowContactDetail] = useState(false);
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -60,6 +63,16 @@ const ContactList = () => {
     setEditingContact(null);
   };
 
+  const handleViewContact = (contact) => {
+    setSelectedContact(contact);
+    setShowContactDetail(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowContactDetail(false);
+    setSelectedContact(null);
+  };
+
   const handleContactUpdate = (updatedContact) => {
     // Update the contact in the local state
     setContacts(prevContacts => 
@@ -67,6 +80,11 @@ const ContactList = () => {
         contact._id === updatedContact._id ? updatedContact : contact
       )
     );
+    
+    // Also update selectedContact if it's the same contact
+    if (selectedContact && selectedContact._id === updatedContact._id) {
+      setSelectedContact(updatedContact);
+    }
   };
 
   if (loading) {
@@ -205,6 +223,13 @@ const ContactList = () => {
                   <div className="col-span-2">
                     <div className="flex items-center space-x-2">
                       <button 
+                        onClick={() => handleViewContact(contact)}
+                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        title="View Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button 
                         onClick={() => handleEditContact(contact)}
                         className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                         title="Edit Contact"
@@ -244,6 +269,18 @@ const ContactList = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Contact Detail Modal */}
+      {showContactDetail && selectedContact && (
+        <ContactDetailModal 
+          contact={selectedContact}
+          onClose={handleCloseDetail}
+          onEdit={() => {
+            handleCloseDetail();
+            handleEditContact(selectedContact);
+          }}
+        />
       )}
 
       {/* Edit Contact Modal */}
