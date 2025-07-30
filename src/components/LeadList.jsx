@@ -5,7 +5,9 @@ import { Table, Columns } from 'lucide-react';
 import LeadTableView from './LeadTableView';
 import LeadKanbanView from './LeadKanbanView';
 import LeadDetailModal from './LeadDetailModal';
+import ContactDetailModal from './ContactDetailModal';
 import EditLead from './EditLead';
+import EditContact from './EditContact';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import EmptyState from './EmptyState';
@@ -20,6 +22,12 @@ const LeadList = () => {
   const [showLeadDetail, setShowLeadDetail] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
   const [showEditLead, setShowEditLead] = useState(false);
+  
+  // Contact-related states for cross-navigation
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [showContactDetail, setShowContactDetail] = useState(false);
+  const [editingContact, setEditingContact] = useState(null);
+  const [showEditContact, setShowEditContact] = useState(false);
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -79,6 +87,46 @@ const LeadList = () => {
     if (selectedLead && selectedLead._id === updatedLead._id) {
       setSelectedLead(updatedLead);
     }
+  };
+
+  // Contact handlers for cross-navigation
+  const handleViewContact = (contact) => {
+    setSelectedContact(contact);
+    setShowContactDetail(true);
+    // Close lead detail if open
+    setShowLeadDetail(false);
+  };
+
+  const handleViewLead = (lead) => {
+    setSelectedLead(lead);
+    setShowLeadDetail(true);
+    // Close contact detail if open
+    setShowContactDetail(false);
+  };
+
+  const handleEditContact = (contact) => {
+    setEditingContact(contact);
+    setShowEditContact(true);
+    // Close other modals
+    setShowContactDetail(false);
+    setShowLeadDetail(false);
+  };
+
+  const handleContactUpdate = (updatedContact) => {
+    // Update contact state if we had it loaded
+    if (selectedContact && selectedContact._id === updatedContact._id) {
+      setSelectedContact(updatedContact);
+    }
+  };
+
+  const handleCloseContactDetail = () => {
+    setShowContactDetail(false);
+    setSelectedContact(null);
+  };
+
+  const handleCloseEditContact = () => {
+    setShowEditContact(false);
+    setEditingContact(null);
   };
 
   if (loading) {
@@ -154,6 +202,20 @@ const LeadList = () => {
             handleCloseDetail();
             handleEditLead(selectedLead);
           }}
+          onViewContact={handleViewContact}
+        />
+      )}
+
+      {/* Contact Detail Modal (for cross-navigation) */}
+      {showContactDetail && selectedContact && (
+        <ContactDetailModal 
+          contact={selectedContact}
+          onClose={handleCloseContactDetail}
+          onEdit={() => {
+            handleCloseContactDetail();
+            handleEditContact(selectedContact);
+          }}
+          onViewLead={handleViewLead}
         />
       )}
 
@@ -163,6 +225,15 @@ const LeadList = () => {
           lead={editingLead}
           onClose={handleCloseEdit}
           onUpdate={handleLeadUpdate}
+        />
+      )}
+
+      {/* Edit Contact Modal (for cross-navigation) */}
+      {showEditContact && editingContact && (
+        <EditContact 
+          contact={editingContact}
+          onClose={handleCloseEditContact}
+          onUpdate={handleContactUpdate}
         />
       )}
     </div>

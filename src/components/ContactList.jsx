@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import EditContact from './EditContact';
+import EditLead from './EditLead';
 import ContactDetailModal from './ContactDetailModal';
+import LeadDetailModal from './LeadDetailModal';
 import { 
   Users, 
   Mail, 
@@ -26,6 +28,12 @@ const ContactList = () => {
   const [showEditContact, setShowEditContact] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [showContactDetail, setShowContactDetail] = useState(false);
+  
+  // Lead-related states for cross-navigation
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [showLeadDetail, setShowLeadDetail] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [showEditLead, setShowEditLead] = useState(false);
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -85,6 +93,46 @@ const ContactList = () => {
     if (selectedContact && selectedContact._id === updatedContact._id) {
       setSelectedContact(updatedContact);
     }
+  };
+
+  // Lead handlers for cross-navigation
+  const handleViewLead = (lead) => {
+    setSelectedLead(lead);
+    setShowLeadDetail(true);
+    // Close contact detail if open
+    setShowContactDetail(false);
+  };
+
+  const handleViewContact = (contact) => {
+    setSelectedContact(contact);
+    setShowContactDetail(true);
+    // Close lead detail if open
+    setShowLeadDetail(false);
+  };
+
+  const handleEditLead = (lead) => {
+    setEditingLead(lead);
+    setShowEditLead(true);
+    // Close other modals
+    setShowLeadDetail(false);
+    setShowContactDetail(false);
+  };
+
+  const handleLeadUpdate = (updatedLead) => {
+    // Update lead state if we had it loaded
+    if (selectedLead && selectedLead._id === updatedLead._id) {
+      setSelectedLead(updatedLead);
+    }
+  };
+
+  const handleCloseLeadDetail = () => {
+    setShowLeadDetail(false);
+    setSelectedLead(null);
+  };
+
+  const handleCloseEditLead = () => {
+    setShowEditLead(false);
+    setEditingLead(null);
   };
 
   if (loading) {
@@ -280,6 +328,20 @@ const ContactList = () => {
             handleCloseDetail();
             handleEditContact(selectedContact);
           }}
+          onViewLead={handleViewLead}
+        />
+      )}
+
+      {/* Lead Detail Modal (for cross-navigation) */}
+      {showLeadDetail && selectedLead && (
+        <LeadDetailModal 
+          lead={selectedLead}
+          onClose={handleCloseLeadDetail}
+          onEdit={() => {
+            handleCloseLeadDetail();
+            handleEditLead(selectedLead);
+          }}
+          onViewContact={handleViewContact}
         />
       )}
 
@@ -289,6 +351,15 @@ const ContactList = () => {
           contact={editingContact}
           onClose={handleCloseEdit}
           onUpdate={handleContactUpdate}
+        />
+      )}
+
+      {/* Edit Lead Modal (for cross-navigation) */}
+      {showEditLead && editingLead && (
+        <EditLead 
+          lead={editingLead}
+          onClose={handleCloseEditLead}
+          onUpdate={handleLeadUpdate}
         />
       )}
     </div>
