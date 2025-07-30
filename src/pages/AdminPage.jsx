@@ -21,7 +21,9 @@ import {
   CheckCircle,
   AlertCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Save,
+  X
 } from 'lucide-react';
 
 const AdminPage = () => {
@@ -33,6 +35,12 @@ const AdminPage = () => {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Form states
+  const [showAddSourceForm, setShowAddSourceForm] = useState(false);
+  const [showAddStageForm, setShowAddStageForm] = useState(false);
+  const [editingSource, setEditingSource] = useState(null);
+  const [editingStage, setEditingStage] = useState(null);
+
   // Form data for new user
   const [formData, setFormData] = useState({
     firstName: '',
@@ -41,6 +49,10 @@ const AdminPage = () => {
     password: '',
     role: 'user'
   });
+
+  // New source/stage form data
+  const [newSource, setNewSource] = useState({ value: '', label: '' });
+  const [newStage, setNewStage] = useState({ value: '', label: '' });
 
   // Lead/Contact field customization state
   const [leadFields, setLeadFields] = useState([
@@ -59,6 +71,14 @@ const AdminPage = () => {
     { id: 5, value: 'cold-call', label: 'Cold Call', active: true },
     { id: 6, value: 'trade-show', label: 'Trade Show', active: true },
     { id: 7, value: 'other', label: 'Other', active: true }
+  ]);
+
+  const [leadStages, setLeadStages] = useState([
+    { id: 1, value: 'New', label: 'New', active: true },
+    { id: 2, value: 'Contacted', label: 'Contacted', active: true },
+    { id: 3, value: 'Qualified', label: 'Qualified', active: true },
+    { id: 4, value: 'Won', label: 'Won', active: true },
+    { id: 5, value: 'Lost', label: 'Lost', active: true }
   ]);
 
   useEffect(() => {
@@ -102,6 +122,105 @@ const AdminPage = () => {
     }
   };
 
+  // Toggle field active state
+  const toggleFieldActive = (fieldId) => {
+    setLeadFields(fields => 
+      fields.map(field => 
+        field.id === fieldId ? { ...field, active: !field.active } : field
+      )
+    );
+  };
+
+  // Toggle source active state
+  const toggleSourceActive = (sourceId) => {
+    setLeadSources(sources => 
+      sources.map(source => 
+        source.id === sourceId ? { ...source, active: !source.active } : source
+      )
+    );
+  };
+
+  // Toggle stage active state
+  const toggleStageActive = (stageId) => {
+    setLeadStages(stages => 
+      stages.map(stage => 
+        stage.id === stageId ? { ...stage, active: !stage.active } : stage
+      )
+    );
+  };
+
+  // Add new source
+  const handleAddSource = (e) => {
+    e.preventDefault();
+    if (newSource.value && newSource.label) {
+      const newId = Math.max(...leadSources.map(s => s.id)) + 1;
+      setLeadSources([...leadSources, {
+        id: newId,
+        value: newSource.value.toLowerCase().replace(/\s+/g, '-'),
+        label: newSource.label,
+        active: true
+      }]);
+      setNewSource({ value: '', label: '' });
+      setShowAddSourceForm(false);
+    }
+  };
+
+  // Add new stage
+  const handleAddStage = (e) => {
+    e.preventDefault();
+    if (newStage.value && newStage.label) {
+      const newId = Math.max(...leadStages.map(s => s.id)) + 1;
+      setLeadStages([...leadStages, {
+        id: newId,
+        value: newStage.value,
+        label: newStage.label,
+        active: true
+      }]);
+      setNewStage({ value: '', label: '' });
+      setShowAddStageForm(false);
+    }
+  };
+
+  // Edit source
+  const handleEditSource = (source) => {
+    setEditingSource(source.id);
+  };
+
+  // Save edited source
+  const handleSaveSource = (sourceId, newLabel) => {
+    setLeadSources(sources =>
+      sources.map(source =>
+        source.id === sourceId ? { ...source, label: newLabel } : source
+      )
+    );
+    setEditingSource(null);
+  };
+
+  // Delete source
+  const handleDeleteSource = (sourceId) => {
+    setLeadSources(sources => sources.filter(source => source.id !== sourceId));
+  };
+
+  // Edit stage
+  const handleEditStage = (stage) => {
+    setEditingStage(stage.id);
+  };
+
+  // Save edited stage
+  const handleSaveStage = (stageId, newLabel) => {
+    setLeadStages(stages =>
+      stages.map(stage =>
+        stage.id === stageId ? { ...stage, label: newLabel } : stage
+      )
+    );
+    setEditingStage(null);
+  };
+
+  // Delete stage
+  const handleDeleteStage = (stageId) => {
+    setLeadStages(stages => stages.filter(stage => stage.id !== stageId));
+  };
+
   const filteredUsers = users.filter(user =>
     user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -114,9 +233,21 @@ const AdminPage = () => {
       : 'bg-blue-100 text-blue-800 border-blue-200';
   };
 
+  const ToggleSwitch = ({ isActive, onChange }) => (
+    <button 
+      onClick={onChange}
+      className={`relative w-12 h-6 rounded-full transition-colors ${
+        isActive ? 'bg-green-500' : 'bg-gray-300'
+      }`}
+    >
+      <div className={`absolute w-5 h-5 bg-white rounded-full shadow-md transition-transform top-0.5 ${
+        isActive ? 'translate-x-6' : 'translate-x-0.5'
+      }`}></div>
+    </button>
+  );
+
   const UserManagement = () => (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
@@ -131,7 +262,6 @@ const AdminPage = () => {
         </button>
       </div>
 
-      {/* Add User Form Modal */}
       {showAddUserForm && (
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-6">
@@ -140,7 +270,7 @@ const AdminPage = () => {
               onClick={() => setShowAddUserForm(false)}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg"
             >
-              ×
+              <X className="w-4 h-4" />
             </button>
           </div>
 
@@ -245,7 +375,6 @@ const AdminPage = () => {
         </div>
       )}
 
-      {/* Users Table */}
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -270,7 +399,7 @@ const AdminPage = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text^xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -320,7 +449,7 @@ const AdminPage = () => {
         <p className="text-gray-600">Customize lead and contact fields for your organization</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Lead Fields */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <h4 className="font-semibold text-gray-900 mb-4">Lead Fields</h4>
@@ -335,12 +464,10 @@ const AdminPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className={`w-10 h-6 rounded-full ${field.active ? 'bg-green-500' : 'bg-gray-300'} transition-colors`}>
-                    <div className={`w-4 h-4 bg-white rounded-full transition-transform ${field.active ? 'translate-x-5' : 'translate-x-1'}`}></div>
-                  </button>
-                  <button className="p-1 text-gray-400 hover:text-gray-600">
-                    <Edit className="w-4 h-4" />
-                  </button>
+                  <ToggleSwitch 
+                    isActive={field.active} 
+                    onChange={() => toggleFieldActive(field.id)}
+                  />
                 </div>
               </div>
             ))}
@@ -349,23 +476,187 @@ const AdminPage = () => {
 
         {/* Lead Sources */}
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-          <h4 className="font-semibold text-gray-900 mb-4">Lead Sources</h4>
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-semibold text-gray-900">Lead Sources</h4>
+            <button
+              onClick={() => setShowAddSourceForm(true)}
+              className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+
+          {showAddSourceForm && (
+            <form onSubmit={handleAddSource} className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Source label (e.g., LinkedIn)"
+                  value={newSource.label}
+                  onChange={(e) => setNewSource({...newSource, label: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  required
+                />
+                <div className="flex space-x-2">
+                  <button type="submit" className="px-3 py-1 bg-blue-600 text-white text-sm rounded">
+                    Add
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowAddSourceForm(false)}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+
           <div className="space-y-3">
             {leadSources.map((source) => (
               <div key={source.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 flex-1">
                   <Building className="w-4 h-4 text-gray-400" />
-                  <div>
-                    <p className="font-medium text-gray-900">{source.label}</p>
-                    <p className="text-xs text-gray-500">{source.value}</p>
+                  <div className="flex-1">
+                    {editingSource === source.id ? (
+                      <input
+                        type="text"
+                        value={source.label}
+                        onChange={(e) => {
+                          const newLabel = e.target.value;
+                          setLeadSources(sources =>
+                            sources.map(s => s.id === source.id ? {...s, label: newLabel} : s)
+                          );
+                        }}
+                        onBlur={() => setEditingSource(null)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            setEditingSource(null);
+                          }
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        autoFocus
+                      />
+                    ) : (
+                      <div>
+                        <p className="font-medium text-gray-900">{source.label}</p>
+                        <p className="text-xs text-gray-500">{source.value}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className={`w-10 h-6 rounded-full ${source.active ? 'bg-green-500' : 'bg-gray-300'} transition-colors`}>
-                    <div className={`w-4 h-4 bg-white rounded-full transition-transform ${source.active ? 'translate-x-5' : 'translate-x-1'}`}></div>
-                  </button>
-                  <button className="p-1 text-gray-400 hover:text-gray-600">
+                  <ToggleSwitch 
+                    isActive={source.active} 
+                    onChange={() => toggleSourceActive(source.id)}
+                  />
+                  <button 
+                    onClick={() => handleEditSource(source)}
+                    className="p-1 text-gray-400 hover:text-gray-600"
+                  >
                     <Edit className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteSource(source.id)}
+                    className="p-1 text-red-400 hover:text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Lead Stages */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-semibold text-gray-900">Lead Stages</h4>
+            <button
+              onClick={() => setShowAddStageForm(true)}
+              className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+
+          {showAddStageForm && (
+            <form onSubmit={handleAddStage} className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Stage name (e.g., Proposal Sent)"
+                  value={newStage.label}
+                  onChange={(e) => setNewStage({...newStage, label: e.target.value, value: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  required
+                />
+                <div className="flex space-x-2">
+                  <button type="submit" className="px-3 py-1 bg-purple-600 text-white text-sm rounded">
+                    Add
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowAddStageForm(false)}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+
+          <div className="space-y-3">
+            {leadStages.map((stage) => (
+              <div key={stage.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div className="flex items-center space-x-3 flex-1">
+                  <Settings className="w-4 h-4 text-gray-400" />
+                  <div className="flex-1">
+                    {editingStage === stage.id ? (
+                      <input
+                        type="text"
+                        value={stage.label}
+                        onChange={(e) => {
+                          const newLabel = e.target.value;
+                          setLeadStages(stages =>
+                            stages.map(s => s.id === stage.id ? {...s, label: newLabel, value: newLabel} : s)
+                          );
+                        }}
+                        onBlur={() => setEditingStage(null)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            setEditingStage(null);
+                          }
+                        }}
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        autoFocus
+                      />
+                    ) : (
+                      <div>
+                        <p className="font-medium text-gray-900">{stage.label}</p>
+                        <p className="text-xs text-gray-500">{stage.value}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <ToggleSwitch 
+                    isActive={stage.active} 
+                    onChange={() => toggleStageActive(stage.id)}
+                  />
+                  <button 
+                    onClick={() => handleEditStage(stage)}
+                    className="p-1 text-gray-400 hover:text-gray-600"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteStage(stage.id)}
+                    className="p-1 text-red-400 hover:text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -373,13 +664,20 @@ const AdminPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Save Configuration Button */}
+      <div className="flex justify-end">
+        <button className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
+          <Save className="w-4 h-4" />
+          <span>Save Configuration</span>
+        </button>
+      </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link
@@ -398,14 +696,14 @@ const AdminPage = () => {
           {submitStatus === 'success' && (
             <div className="flex items-center space-x-2 bg-green-50 text-green-800 px-4 py-2 rounded-xl border border-green-200">
               <CheckCircle className="w-5 h-5" />
-              <span>User added successfully!</span>
+              <span>Changes saved successfully!</span>
             </div>
           )}
           
           {submitStatus === 'error' && (
             <div className="flex items-center space-x-2 bg-red-50 text-red-800 px-4 py-2 rounded-xl border border-red-200">
               <AlertCircle className="w-5 h-5" />
-              <span>Error adding user. Please try again.</span>
+              <span>Error saving changes. Please try again.</span>
             </div>
           )}
         </div>
