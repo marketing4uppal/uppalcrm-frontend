@@ -88,6 +88,7 @@ const ModernDashboard = ({ user }) => {
               { id: 'dashboard', label: 'Dashboard', icon: Activity },
               { id: 'leads', label: 'Leads', icon: Users },
               { id: 'contacts', label: 'Contacts', icon: Phone },
+              { id: 'accounts', label: 'Accounts', icon: DollarSign },
               { id: 'deals', label: 'Deals', icon: Target },
               { id: 'calendar', label: 'Calendar', icon: Calendar },
               { id: 'reports', label: 'Reports', icon: TrendingUp }
