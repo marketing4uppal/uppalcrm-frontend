@@ -103,13 +103,6 @@ const ContactList = () => {
     setShowContactDetail(false);
   };
 
-  const handleViewContact = (contact) => {
-    setSelectedContact(contact);
-    setShowContactDetail(true);
-    // Close lead detail if open
-    setShowLeadDetail(false);
-  };
-
   const handleEditLead = (lead) => {
     setEditingLead(lead);
     setShowEditLead(true);
