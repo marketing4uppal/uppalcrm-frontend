@@ -62,6 +62,14 @@ function App() {
           }
         />
         <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <DashboardPage user={user} />
+          </PrivateRoute>
+        }
+      />
+        <Route
           path="/admin"
           element={
             <PrivateRoute>
