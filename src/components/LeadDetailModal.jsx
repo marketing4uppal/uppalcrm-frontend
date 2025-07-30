@@ -1,33 +1,49 @@
 // src/components/LeadDetailModal.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Edit, User, Mail, Phone, Link as LinkIcon, Calendar, ExternalLink } from 'lucide-react';
+import { X, Edit, User, Mail, Phone, Link as LinkIcon, Calendar, ExternalLink, Target } from 'lucide-react';
 import { formatSource, formatDate } from '../utils/leadUtils';
 
-const LeadDetailModal = ({ lead, onClose, onEdit, onViewContact }) => {
+const LeadDetailModal = ({ lead, onClose, onEdit, onViewContact, onViewDeal }) => {
   const [relatedContact, setRelatedContact] = useState(null);
+  const [relatedDeals, setRelatedDeals] = useState([]);
   const [loadingContact, setLoadingContact] = useState(true);
+  const [loadingDeals, setLoadingDeals] = useState(true);
 
   useEffect(() => {
-    const fetchRelatedContact = async () => {
+    const fetchRelatedRecords = async () => {
       try {
+        // Fetch related contact
         setLoadingContact(true);
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/contacts?leadId=${lead._id}`);
-        
-        if (response.data && response.data.length > 0) {
-          setRelatedContact(response.data[0]); // Assuming one contact per lead
+        const contactResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/contacts?leadId=${lead._id}`);
+        if (contactResponse.data && contactResponse.data.length > 0) {
+          setRelatedContact(contactResponse.data[0]);
         }
+        
+        // Fetch related deals
+        setLoadingDeals(true);
+        const dealsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/deals?leadId=${lead._id}`);
+        setRelatedDeals(dealsResponse.data || []);
+        
       } catch (error) {
-        console.error('Error fetching related contact:', error);
+        console.error('Error fetching related records:', error);
       } finally {
         setLoadingContact(false);
+        setLoadingDeals(false);
       }
     };
 
     if (lead._id) {
-      fetchRelatedContact();
+      fetchRelatedRecords();
     }
   }, [lead._id]);
+
+  const formatCurrency = (amount, currency = 'USD') => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency
+    }).format(amount || 0);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -205,6 +221,53 @@ const LeadDetailModal = ({ lead, onClose, onEdit, onViewContact }) => {
                 ) : (
                   <div className="text-sm text-gray-500 italic">
                     No related contact found
+                  </div>
+                )}
+              </div>
+
+              {/* Related Deals Section */}
+              <div className="mb-4">
+                <h5 className="text-sm font-medium text-gray-500 mb-2">Deals ({relatedDeals.length})</h5>
+                
+                {loadingDeals ? (
+                  <div className="flex items-center space-x-2 text-gray-500">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                    <span className="text-sm">Loading...</span>
+                  </div>
+                ) : relatedDeals.length > 0 ? (
+                  <div className="space-y-2">
+                    {relatedDeals.map((deal) => (
+                      <div 
+                        key={deal._id}
+                        className="bg-white rounded-lg p-3 border border-gray-200 hover:border-green-300 transition-colors cursor-pointer"
+                        onClick={() => onViewDeal && onViewDeal(deal)}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                            <Target className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 text-sm truncate">
+                              {formatCurrency(deal.amount, deal.currency)}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">{deal.stage}</p>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            {deal.stage}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {formatDate(deal.closeDate)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500 italic">
+                    No deals created yet
                   </div>
                 )}
               </div>
