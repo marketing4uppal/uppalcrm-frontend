@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { User, Mail, Phone, Globe, CheckCircle, AlertCircle, X, Save } from 'lucide-react';
+import { syncLeadToContact } from '../utils/syncUtils';
 
 const EditLead = ({ lead, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -15,35 +16,61 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [syncStatus, setSyncStatus] = useState(null);
 
   const { firstName, lastName, email, phone, leadSource, leadStage } = formData;
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (submitStatus) setSubmitStatus(null);
+    if (syncStatus) setSyncStatus(null);
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
+    setSyncStatus(null);
 
     const backendUrl = `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`;
     
     try {
       const res = await axios.put(backendUrl, formData);
       console.log('Lead updated:', res.data);
+      
+      const updatedLead = res.data.lead || res.data;
       setSubmitStatus('success');
+      
+      // Check if sync-relevant fields changed
+      const syncRelevantFields = ['firstName', 'lastName', 'email', 'phone'];
+      const hasRelevantChanges = syncRelevantFields.some(field => 
+        lead[field] !== formData[field]
+      );
+      
+      // Sync changes to associated contact if relevant fields changed
+      if (hasRelevantChanges) {
+        setSyncStatus('syncing');
+        try {
+          await syncLeadToContact(updatedLead);
+          console.log('Lead-Contact sync completed successfully');
+          setSyncStatus('success');
+        } catch (syncError) {
+          console.warn('Lead-Contact sync failed, but lead was updated:', syncError);
+          setSyncStatus('warning');
+          // Don't fail the whole operation if sync fails
+        }
+      }
       
       // Call the update callback to refresh the parent component
       if (onUpdate) {
-        onUpdate(res.data.lead);
+        onUpdate(updatedLead);
       }
       
-      // Close modal after short delay
+      // Close modal after delay (longer if sync occurred)
+      const delay = hasRelevantChanges ? 2000 : 1500;
       setTimeout(() => {
         onClose();
-      }, 1500);
+      }, delay);
       
     } catch (error) {
       console.error('Error updating lead:', error.response?.data || error.message);
@@ -74,6 +101,28 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-600" />
             <span className="text-green-800 font-medium">Lead updated successfully!</span>
+          </div>
+        )}
+
+        {/* Sync Status Messages */}
+        {syncStatus === 'syncing' && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center space-x-2">
+            <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+            <span className="text-blue-800 font-medium">Syncing changes to contact...</span>
+          </div>
+        )}
+
+        {syncStatus === 'success' && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center space-x-2">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            <span className="text-green-800 font-medium">Contact synchronized successfully!</span>
+          </div>
+        )}
+
+        {syncStatus === 'warning' && (
+          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+            <span className="text-yellow-800 font-medium">Lead saved, but contact sync failed.</span>
           </div>
         )}
 
