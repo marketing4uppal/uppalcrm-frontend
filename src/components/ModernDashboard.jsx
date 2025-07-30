@@ -1,5 +1,6 @@
 // src/components/ModernDashboard.jsx
 import ContactList from './ContactList';
+import DealList from './DealList';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LeadForm from './LeadForm';
@@ -289,21 +290,8 @@ const ModernDashboard = ({ user }) => {
           )}       
           
           {activeTab === 'deals' && (
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-              <div className="text-center py-12">
-                <Target className="w-16 h-16 text-purple-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Deal Pipeline</h3>
-                <p className="text-gray-600 mb-8">Track your deals through the sales pipeline...</p>
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <p className="text-gray-500">This section will include:</p>
-                  <ul className="text-gray-600 mt-2 space-y-1">
-                    <li>• Visual pipeline management</li>
-                    <li>• Deal stage tracking</li>
-                    <li>• Revenue forecasting</li>
-                    <li>• Win/loss analysis</li>
-                  </ul>
-                </div>
-              </div>
+            <div className="space-y-6">
+              <DealList />
             </div>
           )}
 
