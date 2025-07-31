@@ -1,6 +1,7 @@
 // src/components/ModernDashboard.jsx
 import ContactList from './ContactList';
 import DealList from './DealList';
+import AccountList from './AccountList';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LeadForm from './LeadForm';
@@ -298,21 +299,8 @@ const ModernDashboard = ({ user }) => {
 
 {activeTab === 'accounts' && (
   <div className="space-y-6">
-    <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-      <div className="text-center py-12">
-        <DollarSign className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Account Management</h3>
-        <p className="text-gray-600 mb-8">Manage ongoing service accounts and subscriptions</p>
-        <div className="bg-gray-50 rounded-xl p-6">
-          <p className="text-gray-500">This section will include:</p>
-          <ul className="text-gray-600 mt-2 space-y-1">
-            <li>• Active accounts overview</li>
-            <li>• Monthly recurring revenue tracking</li>
-            <li>• Renewal notifications</li>
-            <li>• Account transaction history</li>
-          </ul>
-        </div>
-      </div>
+    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+      <AccountList />
     </div>
   </div>
 )}
