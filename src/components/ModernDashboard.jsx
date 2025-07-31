@@ -2,6 +2,7 @@
 import ContactList from './ContactList';
 import DealList from './DealList';
 import AccountList from './AccountList';
+import AccountForm from './AccountForm';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LeadForm from './LeadForm';
@@ -298,7 +299,19 @@ const ModernDashboard = ({ user }) => {
           )}
 
 {activeTab === 'accounts' && (
-  <div className="space-y-6">
+  <div className="space-y-8">
+    {/* Add Account Form */}
+    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-900">Create New Account</h3>
+        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+          <Plus className="w-4 h-4 text-green-600" />
+        </div>
+      </div>
+      <AccountForm onAccountCreated={() => window.location.reload()} />
+    </div>
+
+    {/* Account List */}
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
       <AccountList />
     </div>
