@@ -35,12 +35,66 @@ const ModernDashboard = ({ user }) => {
   const [showAddLeadForm, setShowAddLeadForm] = useState(false);
 
   // Sample stats - you'll replace these with real data from your API
-  const stats = [
-    { title: 'Total Leads', value: '2,847', change: '+12%', icon: Users, color: 'bg-gradient-to-br from-blue-500 to-blue-600' },
-    { title: 'Conversion Rate', value: '18.2%', change: '+3.1%', icon: TrendingUp, color: 'bg-gradient-to-br from-emerald-500 to-emerald-600' },
-    { title: 'Revenue', value: '$127,430', change: '+8.7%', icon: DollarSign, color: 'bg-gradient-to-br from-purple-500 to-purple-600' },
-    { title: 'Active Deals', value: '45', change: '+5', icon: Target, color: 'bg-gradient-to-br from-orange-500 to-orange-600' }
-  ];
+  const [dashboardStats, setDashboardStats] = useState([
+  { title: 'Total Leads', value: '0', change: '+0%', icon: Users, color: 'bg-gradient-to-br from-blue-500 to-blue-600' },
+  { title: 'Active Accounts', value: '0', change: '+0%', icon: TrendingUp, color: 'bg-gradient-to-br from-emerald-500 to-emerald-600' },
+  { title: 'Monthly Revenue', value: '$0', change: '+0%', icon: DollarSign, color: 'bg-gradient-to-br from-purple-500 to-purple-600' },
+  { title: 'Active Deals', value: '0', change: '+0', icon: Target, color: 'bg-gradient-to-br from-orange-500 to-orange-600' }
+]);
+
+useEffect(() => {
+  fetchDashboardStats();
+}, []);
+
+const fetchDashboardStats = async () => {
+  try {
+    const [leadsRes, accountsRes, dealsRes] = await Promise.all([
+      axios.get(`${import.meta.env.VITE_API_URL}/api/leads`),
+      axios.get(`${import.meta.env.VITE_API_URL}/api/accounts`),
+      axios.get(`${import.meta.env.VITE_API_URL}/api/deals`)
+    ]);
+
+    const leads = leadsRes.data;
+    const accounts = accountsRes.data;
+    const deals = dealsRes.data;
+
+    const totalMRR = accounts.reduce((sum, acc) => sum + (acc.currentMonthlyPrice || 0), 0);
+    const activeAccounts = accounts.filter(acc => acc.status === 'active').length;
+
+    setDashboardStats([
+      { 
+        title: 'Total Leads', 
+        value: leads.length.toString(), 
+        change: `${leads.filter(l => l.leadStage === 'New').length} new`, 
+        icon: Users, 
+        color: 'bg-gradient-to-br from-blue-500 to-blue-600' 
+      },
+      { 
+        title: 'Active Accounts', 
+        value: activeAccounts.toString(), 
+        change: `of ${accounts.length} total`, 
+        icon: TrendingUp, 
+        color: 'bg-gradient-to-br from-emerald-500 to-emerald-600' 
+      },
+      { 
+        title: 'Monthly Revenue', 
+        value: `$${totalMRR.toFixed(2)}`, 
+        change: `${accounts.length} accounts`, 
+        icon: DollarSign, 
+        color: 'bg-gradient-to-br from-purple-500 to-purple-600' 
+      },
+      { 
+        title: 'Active Deals', 
+        value: deals.length.toString(), 
+        change: `${deals.filter(d => d.stage !== 'Closed Won' && d.stage !== 'Closed Lost').length} open`, 
+        icon: Target, 
+        color: 'bg-gradient-to-br from-orange-500 to-orange-600' 
+      }
+    ]);
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+  }
+};
 
   const StatCard = ({ stat, index }) => {
     const Icon = stat.icon;
@@ -217,7 +271,7 @@ const ModernDashboard = ({ user }) => {
             <div className="space-y-8">
               {/* Stats Grid - Only show on dashboard */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => (
+                {dashboardStats.map((stat, index) => (
                   <StatCard key={index} stat={stat} index={index} />
                 ))}
               </div>
