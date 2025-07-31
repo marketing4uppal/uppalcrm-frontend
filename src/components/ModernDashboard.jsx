@@ -3,10 +3,11 @@ import ContactList from './ContactList';
 import DealList from './DealList';
 import AccountList from './AccountList';
 import AccountForm from './AccountForm';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Make sure useEffect is here
 import { Link } from 'react-router-dom';
 import LeadForm from './LeadForm';
 import LeadList from './LeadList';
+import axios from 'axios'; // Also make sure axios is imported
 import { 
   Users, 
   TrendingUp, 
