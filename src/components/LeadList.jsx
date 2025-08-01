@@ -1,4 +1,4 @@
-// src/components/LeadList.jsx
+// src/components/LeadList.jsx (Final Version)
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Table, Columns } from 'lucide-react';
@@ -12,12 +12,12 @@ import LoadingSpinner from './LoadingSpinner';
 import ErrorMessage from './ErrorMessage';
 import EmptyState from './EmptyState';
 
-const LeadList = () => {
+const LeadList = ({ searchTerm: globalSearchTerm = '', viewMode: globalViewMode = null }) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('table');
+  const [localViewMode, setLocalViewMode] = useState('table');
   const [selectedLead, setSelectedLead] = useState(null);
   const [showLeadDetail, setShowLeadDetail] = useState(false);
   const [editingLead, setEditingLead] = useState(null);
@@ -28,6 +28,11 @@ const LeadList = () => {
   const [showContactDetail, setShowContactDetail] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [showEditContact, setShowEditContact] = useState(false);
+
+  // Use global search if provided, otherwise use local search
+  const effectiveSearchTerm = globalSearchTerm || localSearchTerm;
+  // Use global view mode if provided, otherwise use local view mode
+  const effectiveViewMode = globalViewMode || localViewMode;
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -48,11 +53,11 @@ const LeadList = () => {
   }, []);
 
   const filteredLeads = leads.filter(lead =>
-    lead.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (lead.phone && lead.phone.includes(searchTerm)) ||
-    (lead.leadSource && lead.leadSource.toLowerCase().includes(searchTerm.toLowerCase()))
+    lead.firstName.toLowerCase().includes(effectiveSearchTerm.toLowerCase()) ||
+    lead.lastName.toLowerCase().includes(effectiveSearchTerm.toLowerCase()) ||
+    lead.email.toLowerCase().includes(effectiveSearchTerm.toLowerCase()) ||
+    (lead.phone && lead.phone.includes(effectiveSearchTerm)) ||
+    (lead.leadSource && lead.leadSource.toLowerCase().includes(effectiveSearchTerm.toLowerCase()))
   );
 
   const handleLeadSelect = (lead) => {
@@ -139,49 +144,62 @@ const LeadList = () => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {filteredLeads.length} Lead{filteredLeads.length !== 1 ? 's' : ''}
-          </h2>
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'table'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Table className="w-4 h-4" />
-              <span>Table</span>
-            </button>
-            <button
-              onClick={() => setViewMode('kanban')}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'kanban'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Columns className="w-4 h-4" />
-              <span>Board</span>
-            </button>
+      {/* Only show local controls if not using global controls */}
+      {!globalSearchTerm && !globalViewMode && (
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              {filteredLeads.length} Lead{filteredLeads.length !== 1 ? 's' : ''}
+            </h2>
+            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setLocalViewMode('table')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  localViewMode === 'table'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Table className="w-4 h-4" />
+                <span>Table</span>
+              </button>
+              <button
+                onClick={() => setLocalViewMode('kanban')}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  localViewMode === 'kanban'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Columns className="w-4 h-4" />
+                <span>Board</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Show search indicator if using global search */}
+      {globalSearchTerm && (
+        <div className="mb-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-700">
+            Found {filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''} matching "{globalSearchTerm}"
+          </p>
+        </div>
+      )}
 
       {filteredLeads.length === 0 ? (
-        <EmptyState searchTerm={searchTerm} />
+        <EmptyState searchTerm={effectiveSearchTerm} />
       ) : (
         <>
-          {viewMode === 'table' ? (
+          {effectiveViewMode === 'table' ? (
             <LeadTableView 
               leads={filteredLeads}
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
+              searchTerm={effectiveSearchTerm}
+              onSearchChange={globalSearchTerm ? undefined : setLocalSearchTerm}
               onLeadSelect={handleLeadSelect}
               onEditLead={handleEditLead}
+              hideLocalSearch={!!globalSearchTerm}
             />
           ) : (
             <LeadKanbanView 
