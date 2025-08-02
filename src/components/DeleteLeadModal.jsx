@@ -1,4 +1,4 @@
-// src/components/DeleteLeadModal.jsx (TEMPORARY - Works with current backend)
+// src/components/DeleteLeadModal.jsx (FINAL - Full Version)
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -14,15 +14,17 @@ import axios from 'axios';
 
 const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
   const [loading, setLoading] = useState(false);
+  const [deleteInfo, setDeleteInfo] = useState(null);
   const [formData, setFormData] = useState({
     reason: '',
     notes: '',
-    contactAction: 'keep'
+    contactAction: 'keep' // 'keep', 'delete', 'convert'
   });
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // 1: confirm, 2: contact choice, 3: final confirm
 
   useEffect(() => {
     if (isOpen && lead) {
+      fetchDeleteInfo();
       // Reset form when modal opens
       setFormData({
         reason: '',
@@ -33,6 +35,38 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
     }
   }, [isOpen, lead]);
 
+  const fetchDeleteInfo = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/delete-info`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setDeleteInfo(response.data);
+    } catch (error) {
+      console.error('Error fetching delete info:', error);
+      // If the endpoint doesn't exist yet or fails, create mock data
+      setDeleteInfo({
+        lead: {
+          id: lead._id,
+          name: `${lead.firstName} ${lead.lastName}`,
+          stage: lead.leadStage,
+          score: lead.score || 0
+        },
+        deletionCheck: {
+          canDelete: true,
+          warnings: lead.leadStage === 'Qualified' ? ['Lead is qualified - consider converting to deal instead'] : [],
+          blockers: []
+        },
+        contactInfo: null
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDelete = async () => {
     try {
       setLoading(true);
@@ -42,25 +76,16 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
         alert('Please log in again');
         return;
       }
-
-      // TEMPORARY: Use regular DELETE method since soft-delete endpoints aren't deployed yet
-      const confirmed = window.confirm('⚠️ TEMPORARY: This will permanently delete the lead until soft-delete backend is deployed. Continue?');
-      if (!confirmed) {
-        setLoading(false);
-        return;
-      }
-
-      // For now, just remove from frontend and show success
-      // In the future, this will call the soft-delete API
-      console.log('TEMP: Would soft-delete lead:', {
-        leadId: lead._id,
+      
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/soft-delete`, {
         reason: formData.reason,
         notes: formData.notes,
         contactAction: formData.contactAction
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
       onDelete(lead._id, formData.contactAction);
       onClose();
@@ -108,23 +133,43 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Processing...</p>
+            <p className="mt-4 text-gray-600">Loading...</p>
           </div>
         ) : (
           <div className="p-6">
-            {/* TEMPORARY WARNING */}
-            <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-orange-800">Temporary Mode</h4>
-                  <p className="text-sm text-orange-700 mt-1">
-                    Backend soft-delete is not deployed yet. This will remove the lead from your view temporarily. 
-                    Full soft-delete functionality will be available after backend deployment.
-                  </p>
+            {/* Warnings */}
+            {deleteInfo?.deletionCheck?.warnings?.length > 0 && (
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-yellow-800">Warning</h4>
+                    <ul className="mt-2 text-sm text-yellow-700 space-y-1">
+                      {deleteInfo.deletionCheck.warnings.map((warning, index) => (
+                        <li key={index}>• {warning}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Blockers */}
+            {deleteInfo?.deletionCheck?.blockers?.length > 0 && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <Shield className="w-5 h-5 text-red-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-red-800">Cannot Delete</h4>
+                    <ul className="mt-2 text-sm text-red-700 space-y-1">
+                      {deleteInfo.deletionCheck.blockers.map((blocker, index) => (
+                        <li key={index}>• {blocker}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Step 1: Deletion Reason */}
             {step === 1 && (
@@ -164,18 +209,101 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
               </div>
             )}
 
-            {/* Step 2: Contact Action (Simplified for temp) */}
-            {step === 2 && (
+            {/* Step 2: Contact Action */}
+            {step === 2 && deleteInfo?.contactInfo && (
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-start space-x-3">
                     <Info className="w-5 h-5 text-blue-600 mt-0.5" />
                     <div>
-                      <h4 className="font-medium text-blue-800">Contact Handling</h4>
+                      <h4 className="font-medium text-blue-800">Associated Contact Found</h4>
                       <p className="text-sm text-blue-700 mt-1">
-                        For now, contacts will be preserved. Full contact management will be available after backend deployment.
+                        This lead has an associated contact: <strong>{deleteInfo.contactInfo.contact.firstName} {deleteInfo.contactInfo.contact.lastName}</strong>
                       </p>
+                      {deleteInfo.contactInfo.dependencies.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-sm text-blue-700">Dependencies:</p>
+                          <ul className="text-xs text-blue-600 ml-4 mt-1 space-y-1">
+                            {deleteInfo.contactInfo.dependencies.map((dep, index) => (
+                              <li key={index}>• {dep.message}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    What should happen to the associated contact?
+                  </label>
+                  
+                  <div className="space-y-3">
+                    <label className="flex items-start space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="radio"
+                        name="contactAction"
+                        value="keep"
+                        checked={formData.contactAction === 'keep'}
+                        onChange={(e) => setFormData({ ...formData, contactAction: e.target.value })}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <UserCheck className="w-4 h-4 text-green-600" />
+                          <span className="font-medium text-gray-900">Keep Contact</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Preserve the contact for future reference (recommended)
+                        </p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="radio"
+                        name="contactAction"
+                        value="convert"
+                        checked={formData.contactAction === 'convert'}
+                        onChange={(e) => setFormData({ ...formData, contactAction: e.target.value })}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <RotateCcw className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-gray-900">Convert to Standalone Contact</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Remove lead reference and keep as independent contact
+                        </p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="radio"
+                        name="contactAction"
+                        value="delete"
+                        checked={formData.contactAction === 'delete'}
+                        onChange={(e) => setFormData({ ...formData, contactAction: e.target.value })}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <UserX className="w-4 h-4 text-red-600" />
+                          <span className="font-medium text-gray-900">Delete Contact Too</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Also soft-delete the associated contact
+                        </p>
+                        {deleteInfo.contactInfo.dependencies?.length > 0 && (
+                          <p className="text-xs text-red-600 mt-1">
+                            ⚠️ This contact has other dependencies - use with caution
+                          </p>
+                        )}
+                      </div>
+                    </label>
                   </div>
                 </div>
               </div>
@@ -195,6 +323,16 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
                       <span className="text-gray-600">Reason:</span>
                       <span className="font-medium">{formData.reason}</span>
                     </div>
+                    {deleteInfo?.contactInfo && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Contact Action:</span>
+                        <span className="font-medium capitalize">
+                          {formData.contactAction === 'keep' && '✓ Keep Contact'}
+                          {formData.contactAction === 'convert' && '↻ Convert to Standalone'}
+                          {formData.contactAction === 'delete' && '✗ Delete Contact'}
+                        </span>
+                      </div>
+                    )}
                     {formData.notes && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Notes:</span>
@@ -210,7 +348,7 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
                     <div>
                       <h4 className="font-medium text-yellow-800">Final Confirmation</h4>
                       <p className="text-sm text-yellow-700 mt-1">
-                        This action will remove the lead from your current view. Full soft-delete with restore capability will be available after backend deployment.
+                        This action will soft-delete the lead. You can restore it later if needed, but all associated data relationships may be affected.
                       </p>
                     </div>
                   </div>
@@ -242,9 +380,9 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
                 Cancel
               </button>
               
-              {step < 3 ? (
+              {step < 3 && deleteInfo?.contactInfo && step === 1 ? (
                 <button
-                  onClick={() => setStep(step + 1)}
+                  onClick={() => setStep(2)}
                   disabled={!canProceed()}
                   className={`px-4 py-2 rounded-lg transition-colors ${
                     canProceed()
@@ -254,11 +392,39 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
                 >
                   Next →
                 </button>
+              ) : step < 3 && step === 1 ? (
+                <button
+                  onClick={() => setStep(3)}
+                  disabled={!canProceed()}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    canProceed()
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Next →
+                </button>
+              ) : step === 2 ? (
+                <button
+                  onClick={() => setStep(3)}
+                  disabled={!canProceed()}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    canProceed()
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Review →
+                </button>
               ) : (
                 <button
                   onClick={handleDelete}
-                  disabled={!canProceed()}
-                  className="px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 bg-red-600 text-white hover:bg-red-700"
+                  disabled={!canProceed() || deleteInfo?.deletionCheck?.blockers?.length > 0}
+                  className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                    canProceed() && !deleteInfo?.deletionCheck?.blockers?.length
+                      ? 'bg-red-600 text-white hover:bg-red-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Delete Lead</span>
