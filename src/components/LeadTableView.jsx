@@ -1,32 +1,35 @@
-// src/components/LeadTableView.jsx
+// src/components/LeadTableView.jsx (Updated with Delete Function)
 import React from 'react';
 import { Search, Filter, ChevronDown, Calendar, Clock } from 'lucide-react';
 import LeadTableRow from './LeadTableRow';
 
-const LeadTableView = ({ leads, searchTerm, onSearchChange, onLeadSelect, onEditLead }) => {
+const LeadTableView = ({ leads, searchTerm, onSearchChange, onLeadSelect, onEditLead, onDeleteLead, hideLocalSearch }) => {
   return (
     <div className="overflow-hidden">
-      <div className="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-t-xl">
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-600">All leads ({leads.length})</span>
-          <button className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
-            <Filter className="w-4 h-4" />
-            <span>Filter by</span>
-          </button>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search leads..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 pr-4 py-2 w-64 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+      {/* Only show search if not hidden by global search */}
+      {!hideLocalSearch && (
+        <div className="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-t-xl">
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-600">All leads ({leads.length})</span>
+            <button className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900">
+              <Filter className="w-4 h-4" />
+              <span>Filter by</span>
+            </button>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search leads..."
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-10 pr-4 py-2 w-64 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -82,6 +85,7 @@ const LeadTableView = ({ leads, searchTerm, onSearchChange, onLeadSelect, onEdit
                 lead={lead} 
                 onLeadSelect={onLeadSelect}
                 onEditLead={onEditLead}
+                onDeleteLead={onDeleteLead}
               />
             ))}
           </tbody>

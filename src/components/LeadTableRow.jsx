@@ -1,9 +1,9 @@
-// src/components/LeadTableRow.jsx (Professional-Compact Version)
+// src/components/LeadTableRow.jsx (Updated with Delete Button)
 import React from 'react';
-import { Mail, Phone, Eye, MoreVertical, Edit } from 'lucide-react';
+import { Mail, Phone, Eye, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { getSourceBadgeColor, formatSource, formatDate, getTimeAgo } from '../utils/leadUtils';
 
-const LeadTableRow = ({ lead, onLeadSelect, onEditLead }) => {
+const LeadTableRow = ({ lead, onLeadSelect, onEditLead, onDeleteLead }) => {
   // Format date to single line - professional format
   const formatCompactDate = (dateString) => {
     const date = new Date(dateString);
@@ -86,7 +86,7 @@ const LeadTableRow = ({ lead, onLeadSelect, onEditLead }) => {
         <div className="text-xs text-gray-500">{formatTime(lead.updatedAt)}</div>
       </td>
 
-      {/* Actions - Clean and Professional */}
+      {/* Actions - Clean and Professional (UPDATED with Delete Button) */}
       <td className="px-4 py-3 whitespace-nowrap text-right">
         <div className="flex items-center justify-end space-x-2">
           <button 
@@ -108,6 +108,17 @@ const LeadTableRow = ({ lead, onLeadSelect, onEditLead }) => {
             title="Edit Lead"
           >
             <Edit className="w-4 h-4" />
+          </button>
+          {/* NEW: Delete Button */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteLead(lead);
+            }}
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+            title="Delete Lead"
+          >
+            <Trash2 className="w-4 h-4" />
           </button>
           <button 
             onClick={(e) => e.stopPropagation()}
