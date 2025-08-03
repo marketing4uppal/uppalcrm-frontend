@@ -1,4 +1,4 @@
-// src/components/DealList.jsx (Updated with Delete Functionality)
+// src/components/DealList.jsx (Fixed with Dynamic Stages and Delete)
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
@@ -19,23 +19,25 @@ import DeleteDealModal from './DeleteDealModal'; // NEW IMPORT
 
 const DealList = () => {
   const [deals, setDeals] = useState([]);
+  const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState('pipeline'); // 'pipeline' or 'table'
+  const [viewMode, setViewMode] = useState('pipeline');
   
   // NEW: Delete functionality states
   const [deletingDeal, setDeletingDeal] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
-    fetchDeals();
+    Promise.all([fetchDeals(), fetchStages()]);
   }, []);
 
   const fetchDeals = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/deals`);
+      console.log('Fetched deals:', response.data); // Debug log
       setDeals(response.data);
       setError(null);
     } catch (error) {
@@ -46,6 +48,25 @@ const DealList = () => {
     }
   };
 
+  const fetchStages = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/deals/stages/list`);
+      console.log('Fetched stages:', response.data); // Debug log
+      setStages(response.data);
+    } catch (error) {
+      console.error('Error fetching stages:', error);
+      // Fallback to default stages if API fails
+      setStages([
+        { name: 'Prospecting', color: '#6B7280' },
+        { name: 'Discovery', color: '#3B82F6' },
+        { name: 'Proposal', color: '#8B5CF6' },
+        { name: 'Negotiation', color: '#F59E0B' },
+        { name: 'Closed Won', color: '#10B981' },
+        { name: 'Closed Lost', color: '#EF4444' }
+      ]);
+    }
+  };
+
   // NEW: Delete functionality handlers
   const handleDeleteDeal = (deal) => {
     setDeletingDeal(deal);
@@ -53,28 +74,42 @@ const DealList = () => {
   };
 
   const handleDeleteConfirm = (dealId) => {
-    // Remove the deal from the list
     setDeals(prevDeals => prevDeals.filter(deal => deal._id !== dealId));
-    
-    // Show success message (you can replace this with a toast notification)
     console.log('Deal deleted successfully');
   };
 
-  const filteredDeals = deals.filter(deal =>
-    deal.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.stage.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.product?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDeals = deals.filter(deal => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      deal.firstName?.toLowerCase().includes(searchLower) ||
+      deal.lastName?.toLowerCase().includes(searchLower) ||
+      deal.dealName?.toLowerCase().includes(searchLower) ||
+      deal.stage?.toLowerCase().includes(searchLower) ||
+      deal.product?.toLowerCase().includes(searchLower) ||
+      deal.email?.toLowerCase().includes(searchLower)
+    );
+  });
 
-  const groupedDeals = {
-    'Prospecting': filteredDeals.filter(deal => deal.stage === 'Prospecting'),
-    'Discovery': filteredDeals.filter(deal => deal.stage === 'Discovery'),
-    'Proposal': filteredDeals.filter(deal => deal.stage === 'Proposal'),
-    'Negotiation': filteredDeals.filter(deal => deal.stage === 'Negotiation'),
-    'Closed Won': filteredDeals.filter(deal => deal.stage === 'Closed Won'),
-    'Closed Lost': filteredDeals.filter(deal => deal.stage === 'Closed Lost')
-  };
+  // Group deals by stage dynamically
+  const groupedDeals = {};
+  
+  // Initialize all stages with empty arrays
+  stages.forEach(stage => {
+    groupedDeals[stage.name] = [];
+  });
+  
+  // Add deals to their respective stages
+  filteredDeals.forEach(deal => {
+    if (deal.stage && groupedDeals[deal.stage]) {
+      groupedDeals[deal.stage].push(deal);
+    } else {
+      // Handle deals with unknown stages
+      if (!groupedDeals['Other']) {
+        groupedDeals['Other'] = [];
+      }
+      groupedDeals['Other'].push(deal);
+    }
+  });
 
   const formatCurrency = (amount, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
@@ -93,20 +128,13 @@ const DealList = () => {
     });
   };
 
-  const getStageColor = (stage) => {
-    const colors = {
-      'Prospecting': 'bg-gray-100 text-gray-800 border-gray-200',
-      'Discovery': 'bg-blue-100 text-blue-800 border-blue-200',
-      'Proposal': 'bg-purple-100 text-purple-800 border-purple-200',
-      'Negotiation': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'Closed Won': 'bg-green-100 text-green-800 border-green-200',
-      'Closed Lost': 'bg-red-100 text-red-800 border-red-200'
-    };
-    return colors[stage] || 'bg-gray-100 text-gray-800 border-gray-200';
+  const getStageColor = (stageName) => {
+    const stage = stages.find(s => s.name === stageName);
+    return stage?.color || '#6B7280';
   };
 
   const PipelineColumn = ({ stage, deals }) => (
-    <div className="bg-gray-50 rounded-xl p-4">
+    <div className="bg-gray-50 rounded-xl p-4 min-h-[300px]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-gray-900">{stage}</h3>
         <span className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">
@@ -129,15 +157,18 @@ const DealList = () => {
   const DealCard = ({ deal, onDelete }) => (
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <h4 className="font-medium text-gray-900 text-sm">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-medium text-gray-900 text-sm truncate">
             {deal.dealName || `${deal.firstName} ${deal.lastName}`}
           </h4>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-1 truncate">
             {deal.firstName} {deal.lastName}
           </p>
+          {deal.email && (
+            <p className="text-xs text-gray-400 truncate">{deal.email}</p>
+          )}
         </div>
-        <div className="flex space-x-1">
+        <div className="flex space-x-1 ml-2">
           <button
             className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
             title="View Details"
@@ -169,9 +200,11 @@ const DealList = () => {
           <span className="text-lg font-semibold text-gray-900">
             {formatCurrency(deal.amount)}
           </span>
-          <span className="text-xs text-gray-500">
-            {deal.probability}%
-          </span>
+          {deal.probability && (
+            <span className="text-xs text-gray-500">
+              {deal.probability}%
+            </span>
+          )}
         </div>
         
         <div className="flex items-center text-xs text-gray-500">
@@ -180,7 +213,7 @@ const DealList = () => {
         </div>
         
         {deal.product && (
-          <div className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded">
+          <div className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded truncate">
             {deal.product}
           </div>
         )}
@@ -294,6 +327,15 @@ const DealList = () => {
           </div>
         </div>
 
+        {/* Debug Info (remove this in production) */}
+        {deals.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p className="text-sm text-yellow-800">
+              <strong>Debug:</strong> Found {deals.length} deals. Stages: {deals.map(d => d.stage).join(', ')}
+            </p>
+          </div>
+        )}
+
         {/* Pipeline View */}
         {filteredDeals.length === 0 ? (
           <div className="text-center py-12">
@@ -309,9 +351,13 @@ const DealList = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 overflow-x-auto">
-            {Object.entries(groupedDeals).map(([stage, stageDeals]) => (
-              <PipelineColumn key={stage} stage={stage} deals={stageDeals} />
-            ))}
+            {Object.entries(groupedDeals).map(([stage, stageDeals]) => {
+              // Only show columns that have deals or are defined stages
+              if (stageDeals.length === 0 && stage === 'Other') return null;
+              return (
+                <PipelineColumn key={stage} stage={stage} deals={stageDeals} />
+              );
+            })}
           </div>
         )}
       </div>
