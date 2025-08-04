@@ -1,4 +1,4 @@
-// src/pages/AdminPage.jsx - Fixed Version (Components moved outside)
+// src/pages/AdminPage.jsx - Complete Updated Version with Add Lead Fields functionality
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -323,7 +323,18 @@ const FieldCustomization = ({
   setEditingStage, 
   editStage, 
   deleteStage, 
-  toggleStageActive 
+  toggleStageActive,
+  // NEW: Add Field functionality props
+  showAddFieldForm,
+  setShowAddFieldForm,
+  addField,
+  newField,
+  handleNewFieldChange,
+  setNewField,
+  editingField,
+  setEditingField,
+  editFieldLabel,
+  deleteField
 }) => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
@@ -388,169 +399,22 @@ const FieldCustomization = ({
     )}
 
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-      {/* Lead Fields */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-        <h4 className="font-semibold text-gray-900 mb-4">Lead Fields</h4>
-        <div className="space-y-3">
-          {crmSettings.leadFields.map((field) => (
-            <div key={field.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Database className="w-4 h-4 text-gray-400" />
-                <div>
-                  <p className="font-medium text-gray-900">{field.label}</p>
-                  <p className="text-xs text-gray-500">{field.type} • {field.required ? 'Required' : 'Optional'}</p>
-                </div>
-              </div>
-              <ToggleSwitch 
-                isActive={field.active} 
-                onChange={() => toggleFieldActive(field.id)}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Lead Sources */}
+      {/* Lead Fields - UPDATED with Add Field functionality */}
       <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-gray-900">Lead Sources</h4>
+          <h4 className="font-semibold text-gray-900">Lead Fields</h4>
           <button
-            onClick={() => setShowAddSourceForm(true)}
-            className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+            onClick={() => setShowAddFieldForm(true)}
+            className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
 
-        {showAddSourceForm && (
-          <form onSubmit={addSource} className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="Source label (e.g., LinkedIn)"
-                value={newSource.label}
-                onChange={handleNewSourceChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <div className="flex space-x-2">
-                <button 
-                  type="submit" 
-                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                >
-                  Add
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setShowAddSourceForm(false);
-                    setNewSource({ label: '' });
-                  }}
-                  className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </form>
-        )}
-
-        <div className="space-y-3">
-          {crmSettings.leadSources.map((source) => (
-            <div key={source.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-              <div className="flex items-center space-x-3 flex-1">
-                <Building className="w-4 h-4 text-gray-400" />
-                <div className="flex-1">
-                  {editingSource === source.id ? (
-                    <input
-                      type="text"
-                      defaultValue={source.label}
-                      onBlur={(e) => editSource(source.id, e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          editSource(source.id, e.target.value);
-                        }
-                        if (e.key === 'Escape') {
-                          setEditingSource(null);
-                        }
-                      }}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      autoFocus
-                    />
-                  ) : (
-                    <p className="font-medium text-gray-900">{source.label}</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <ToggleSwitch 
-                  isActive={source.active} 
-                  onChange={() => toggleSourceActive(source.id)}
-                />
-                <button
-                  onClick={() => setEditingSource(source.id)}
-                  className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                >
-                  <Edit className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => deleteSource(source.id)}
-                  className="p-1 text-red-600 hover:bg-red-50 rounded"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Lead Stages */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-gray-900">Lead Stages</h4>
-          <button
-            onClick={() => setShowAddStageForm(true)}
-            className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        </div>
-
-        {showAddStageForm && (
-          <form onSubmit={addStage} className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="Stage label (e.g., Follow-up)"
-                value={newStage.label}
-                onChange={handleNewStageChange}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
-              <div className="flex space-x-2">
-                <button 
-                  type="submit" 
-                  className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                >
-                  Add
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setShowAddStageForm(false);
-                    setNewStage({ label: '' });
-                  }}
-                  className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </form>
-        )}
-
-        <div className="space-y-3">
+        {/* Add Field Form */}
+        {showAddFieldForm && (
+          <form onSubmit={addField} className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="space-y-3">
           {crmSettings.leadStages.map((stage) => (
             <div key={stage.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
               <div className="flex items-center space-x-3 flex-1">
@@ -619,6 +483,16 @@ const AdminPage = () => {
   const [editingSource, setEditingSource] = useState(null);
   const [editingStage, setEditingStage] = useState(null);
 
+  // NEW: Add Field states
+  const [showAddFieldForm, setShowAddFieldForm] = useState(false);
+  const [editingField, setEditingField] = useState(null);
+  const [newField, setNewField] = useState({
+    label: '',
+    type: 'text',
+    required: false,
+    options: ''
+  });
+
   // Form data
   const [formData, setFormData] = useState({
     firstName: '',
@@ -631,14 +505,16 @@ const AdminPage = () => {
   const [newSource, setNewSource] = useState({ label: '' });
   const [newStage, setNewStage] = useState({ label: '' });
 
-  // CRM Settings state - simplified
+  // CRM Settings state - updated with isCustom flag
   const [crmSettings, setCrmSettings] = useState({
     leadFields: [
-      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true },
-      { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },
-      { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true },
-      { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true },
-      { id: 5, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true }
+      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true, isCustom: false },
+      { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true, isCustom: false },
+      { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true, isCustom: false },
+      { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true, isCustom: false },
+      { id: 5, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true, isCustom: false },
+      { id: 6, name: 'company', label: 'Company', type: 'text', required: false, active: false, isCustom: false },
+      { id: 7, name: 'jobTitle', label: 'Job Title', type: 'text', required: false, active: false, isCustom: false }
     ],
     leadSources: [
       { id: 1, value: 'website', label: 'Website', active: true },
@@ -686,6 +562,11 @@ const AdminPage = () => {
 
   const handleNewStageChange = useCallback((e) => {
     setNewStage({ label: e.target.value });
+  }, []);
+
+  // NEW: Add Field event handler
+  const handleNewFieldChange = useCallback((field, value) => {
+    setNewField(prev => ({ ...prev, [field]: value }));
   }, []);
 
   // API Functions
@@ -853,6 +734,70 @@ const AdminPage = () => {
       )
     }));
     setHasUnsavedChanges(true);
+  };
+
+  // NEW: Field management functions
+  const addField = (e) => {
+    e.preventDefault();
+    if (newField.label && newField.label.trim()) {
+      const maxId = Math.max(...crmSettings.leadFields.map(f => f.id), 0);
+      const fieldName = newField.label.toLowerCase()
+        .replace(/[^a-z0-9]/g, '')  // Remove special characters
+        .replace(/\s+/g, '');       // Remove spaces
+      
+      const newFieldObj = {
+        id: maxId + 1,
+        name: fieldName,
+        label: newField.label.trim(),
+        type: newField.type,
+        required: newField.required,
+        active: true,
+        isCustom: true, // Mark as custom field
+        options: newField.type === 'select' ? 
+          newField.options.split('\n').filter(opt => opt.trim()).map(opt => opt.trim()) : 
+          undefined
+      };
+      
+      setCrmSettings(prev => ({
+        ...prev,
+        leadFields: [...prev.leadFields, newFieldObj]
+      }));
+      
+      setNewField({ label: '', type: 'text', required: false, options: '' });
+      setShowAddFieldForm(false);
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const editFieldLabel = (fieldId, newLabel) => {
+    if (newLabel && newLabel.trim()) {
+      setCrmSettings(prev => ({
+        ...prev,
+        leadFields: prev.leadFields.map(field =>
+          field.id === fieldId ? { ...field, label: newLabel.trim() } : field
+        )
+      }));
+      setHasUnsavedChanges(true);
+    }
+    setEditingField(null);
+  };
+
+  const deleteField = (fieldId) => {
+    const field = crmSettings.leadFields.find(f => f.id === fieldId);
+    
+    // Don't allow deletion of system fields
+    if (!field.isCustom) {
+      alert('System fields cannot be deleted.');
+      return;
+    }
+    
+    if (window.confirm(`Are you sure you want to delete the "${field.label}" field? This action cannot be undone.`)) {
+      setCrmSettings(prev => ({
+        ...prev,
+        leadFields: prev.leadFields.filter(field => field.id !== fieldId)
+      }));
+      setHasUnsavedChanges(true);
+    }
   };
 
   // Source management
@@ -1058,6 +1003,17 @@ const AdminPage = () => {
             editStage={editStage}
             deleteStage={deleteStage}
             toggleStageActive={toggleStageActive}
+            // NEW: Add Field props
+            showAddFieldForm={showAddFieldForm}
+            setShowAddFieldForm={setShowAddFieldForm}
+            addField={addField}
+            newField={newField}
+            handleNewFieldChange={handleNewFieldChange}
+            setNewField={setNewField}
+            editingField={editingField}
+            setEditingField={setEditingField}
+            editFieldLabel={editFieldLabel}
+            deleteField={deleteField}
           />
         )}
       </div>
@@ -1065,4 +1021,302 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default AdminPage;-4">
+              {/* Field Label */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Field Label
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., Budget, Timeline, Industry"
+                  value={newField.label}
+                  onChange={(e) => handleNewFieldChange('label', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  required
+                />
+              </div>
+
+              {/* Field Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Field Type
+                </label>
+                <select
+                  value={newField.type}
+                  onChange={(e) => handleNewFieldChange('type', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="text">Text</option>
+                  <option value="email">Email</option>
+                  <option value="tel">Phone</option>
+                  <option value="number">Number</option>
+                  <option value="date">Date</option>
+                  <option value="select">Dropdown</option>
+                  <option value="textarea">Text Area</option>
+                  <option value="url">URL</option>
+                </select>
+              </div>
+
+              {/* Dropdown Options (only show if type is select) */}
+              {newField.type === 'select' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Dropdown Options (one per line)
+                  </label>
+                  <textarea
+                    placeholder="Option 1&#10;Option 2&#10;Option 3"
+                    value={newField.options}
+                    onChange={(e) => handleNewFieldChange('options', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    rows="3"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Enter each option on a new line</p>
+                </div>
+              )}
+
+              {/* Required Toggle */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Required Field</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newField.required}
+                    onChange={(e) => handleNewFieldChange('required', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+
+              {/* Form Actions */}
+              <div className="flex space-x-2 pt-2">
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Add Field
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowAddFieldForm(false);
+                    setNewField({ 
+                      label: '', 
+                      type: 'text', 
+                      required: false, 
+                      options: '' 
+                    });
+                  }}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-400 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {/* Existing Fields List */}
+        <div className="space-y-3">
+          {crmSettings.leadFields.map((field) => (
+            <div key={field.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3 flex-1">
+                <Database className="w-4 h-4 text-gray-400" />
+                <div className="flex-1">
+                  {editingField === field.id ? (
+                    <input
+                      type="text"
+                      defaultValue={field.label}
+                      onBlur={(e) => editFieldLabel(field.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          editFieldLabel(field.id, e.target.value);
+                        }
+                        if (e.key === 'Escape') {
+                          setEditingField(null);
+                        }
+                      }}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      autoFocus
+                    />
+                  ) : (
+                    <div>
+                      <p className="font-medium text-gray-900">{field.label}</p>
+                      <p className="text-xs text-gray-500">
+                        {field.type} • {field.required ? 'Required' : 'Optional'}
+                        {field.isCustom && ' • Custom Field'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ToggleSwitch 
+                  isActive={field.active} 
+                  onChange={() => toggleFieldActive(field.id)}
+                />
+                {/* Only show edit/delete for custom fields, not system fields */}
+                {field.isCustom && (
+                  <>
+                    <button
+                      onClick={() => setEditingField(field.id)}
+                      className="p-1 text-purple-600 hover:bg-purple-50 rounded"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => deleteField(field.id)}
+                      className="p-1 text-red-600 hover:bg-red-50 rounded"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Lead Sources */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-gray-900">Lead Sources</h4>
+          <button
+            onClick={() => setShowAddSourceForm(true)}
+            className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+
+        {showAddSourceForm && (
+          <form onSubmit={addSource} className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Source label (e.g., LinkedIn)"
+                value={newSource.label}
+                onChange={handleNewSourceChange}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+              <div className="flex space-x-2">
+                <button 
+                  type="submit" 
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Add
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowAddSourceForm(false);
+                    setNewSource({ label: '' });
+                  }}
+                  className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        <div className="space-y-3">
+          {crmSettings.leadSources.map((source) => (
+            <div key={source.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3 flex-1">
+                <Building className="w-4 h-4 text-gray-400" />
+                <div className="flex-1">
+                  {editingSource === source.id ? (
+                    <input
+                      type="text"
+                      defaultValue={source.label}
+                      onBlur={(e) => editSource(source.id, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          editSource(source.id, e.target.value);
+                        }
+                        if (e.key === 'Escape') {
+                          setEditingSource(null);
+                        }
+                      }}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      autoFocus
+                    />
+                  ) : (
+                    <p className="font-medium text-gray-900">{source.label}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ToggleSwitch 
+                  isActive={source.active} 
+                  onChange={() => toggleSourceActive(source.id)}
+                />
+                <button
+                  onClick={() => setEditingSource(source.id)}
+                  className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                >
+                  <Edit className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={() => deleteSource(source.id)}
+                  className="p-1 text-red-600 hover:bg-red-50 rounded"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Lead Stages */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-gray-900">Lead Stages</h4>
+          <button
+            onClick={() => setShowAddStageForm(true)}
+            className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+
+        {showAddStageForm && (
+          <form onSubmit={addStage} className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="space-y-2">
+              <input
+                type="text"
+                placeholder="Stage label (e.g., Follow-up)"
+                value={newStage.label}
+                onChange={handleNewStageChange}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                required
+              />
+              <div className="flex space-x-2">
+                <button 
+                  type="submit" 
+                  className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                >
+                  Add
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowAddStageForm(false);
+                    setNewStage({ label: '' });
+                  }}
+                  className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        <div className="space-y
