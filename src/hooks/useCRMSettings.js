@@ -1,6 +1,5 @@
-// src/hooks/useCRMSettings.js - FINAL VERSION
+// src/hooks/useCRMSettings.js - CORRECTED CLEAN VERSION
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 
 export const useCRMSettings = () => {
   const [leadSources, setLeadSources] = useState([]);
@@ -10,61 +9,11 @@ export const useCRMSettings = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchCRMSettings();
+    // Set fallback values immediately
+    console.log('🔍 Using fallback values with only Last Name required');
+    setFallbackValues();
+    setLoading(false);
   }, []);
-
-  const fetchCRMSettings = async () => {
-    try {
-      setLoading(true);
-      
-      // FORCE FALLBACK VALUES FOR NOW (until API is properly set up)
-      console.log('🔍 Using fallback values with only Last Name required');
-      setFallbackValues();
-      return;
-      
-      // API call code (commented out until backend is fixed):
-      /*
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        console.log('🔍 No token found, using fallback values');
-        setFallbackValues();
-        return;
-      }
-
-      console.log('🔍 Attempting to fetch CRM settings...');
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/crm-settings`, {
-        headers: { 
-          'x-auth-token': token,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('🔍 CRM Settings API Response:', response.data);
-
-      if (response.data.success && response.data.data) {
-        const settings = response.data.data;
-        
-        setLeadSources(settings.leadSources?.filter(source => source.active) || []);
-        setLeadStages(settings.leadStages?.filter(stage => stage.active).sort((a, b) => a.order - b.order) || []);
-        setLeadFields(settings.leadFields?.filter(field => field.active) || []);
-        
-        console.log('🔍 Set leadFields from API:', settings.leadFields);
-        setError(null);
-      } else {
-        console.log('🔍 API response invalid, using fallback values');
-        setFallbackValues();
-      }
-      */
-      
-    } catch (err) {
-      console.error('🔍 Error fetching CRM settings:', err);
-      setError('Failed to load CRM settings');
-      setFallbackValues();
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const setFallbackValues = () => {
     console.log('🔍 Setting fallback values - ONLY LAST NAME REQUIRED');
@@ -135,7 +84,6 @@ export const useCRMSettings = () => {
     leadFields,
     loading,
     error,
-    refresh: fetchCRMSettings,
     getActiveLeadSources,
     getActiveLeadStages,
     getActiveLeadFields,
