@@ -1,4 +1,51 @@
-// src/pages/AdminPage.jsx - Simplified and Bug-Free Version
+{/* Save/Discard Buttons */}
+        {hasUnsavedChanges && (
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">Unsaved changes</span>
+            </div>
+            <button
+              onClick={handleDiscardChanges}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              Discard
+            </button>
+            <button
+              onClick={handleSaveCustomizations}
+              disabled={isSaving}
+              className={`px-4 py-2 rounded-xl font-medium flex items-center space-x-2 transition-all ${
+                isSaving
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-600 to-blue-600 text-white hover:shadow-lg'
+              }`}
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+        
+        {/* Reset to Defaults Button */}
+        {!hasUnsavedChanges && (
+          <button
+            onClick={handleResetToDefaults}
+            disabled={isSaving}
+            className="px-4 py-2 text-red-700 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors flex items-center space-x-2"
+          >
+            <Settings className="w-4 h-4" />
+            <span>Reset to Defaults</span>
+          </button>
+        )}// src/pages/AdminPage.jsx - Simplified and Bug-Free Version
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -20,7 +67,8 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  X
+  X,
+  Save
 } from 'lucide-react';
 
 const AdminPage = () => {
@@ -30,6 +78,8 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form states
   const [showAddUserForm, setShowAddUserForm] = useState(false);
@@ -82,8 +132,42 @@ const AdminPage = () => {
   useEffect(() => {
     if (activeTab === 'users') {
       fetchUsers();
+    } else if (activeTab === 'customization') {
+      fetchCRMSettings();
     }
   }, [activeTab]);
+
+  // Load CRM settings from backend
+  const fetchCRMSettings = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setSubmitStatus('error');
+        return;
+      }
+
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/crm-settings`, {
+        headers: { 
+          'x-auth-token': token,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.success && response.data.data) {
+        const settings = response.data.data;
+        setLeadFields(settings.leadFields || []);
+        setLeadSources(settings.leadSources || []);
+        setLeadStages(settings.leadStages || []);
+        setHasUnsavedChanges(false);
+      }
+    } catch (error) {
+      console.error('Error fetching CRM settings:', error);
+      setSubmitStatus('error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // API Functions
   const fetchUsers = async () => {
@@ -152,13 +236,14 @@ const AdminPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Toggle functions
+  // Toggle functions with save tracking
   const toggleFieldActive = (fieldId) => {
     setLeadFields(fields => 
       fields.map(field => 
         field.id === fieldId ? { ...field, active: !field.active } : field
       )
     );
+    setHasUnsavedChanges(true);
   };
 
   const toggleSourceActive = (sourceId) => {
@@ -167,6 +252,7 @@ const AdminPage = () => {
         source.id === sourceId ? { ...source, active: !source.active } : source
       )
     );
+    setHasUnsavedChanges(true);
   };
 
   const toggleStageActive = (stageId) => {
@@ -175,9 +261,10 @@ const AdminPage = () => {
         stage.id === stageId ? { ...stage, active: !stage.active } : stage
       )
     );
+    setHasUnsavedChanges(true);
   };
 
-  // Source management
+  // Source management with save tracking
   const handleAddSource = (e) => {
     e.preventDefault();
     if (newSource.label && newSource.label.trim()) {
@@ -191,6 +278,7 @@ const AdminPage = () => {
       setLeadSources([...leadSources, newSourceObj]);
       setNewSource({ label: '' });
       setShowAddSourceForm(false);
+      setHasUnsavedChanges(true);
     }
   };
 
@@ -205,6 +293,7 @@ const AdminPage = () => {
           source.id === sourceId ? { ...source, label: newLabel.trim() } : source
         )
       );
+      setHasUnsavedChanges(true);
     }
     setEditingSource(null);
   };
@@ -212,10 +301,11 @@ const AdminPage = () => {
   const handleDeleteSource = (sourceId) => {
     if (window.confirm('Are you sure you want to delete this source?')) {
       setLeadSources(sources => sources.filter(source => source.id !== sourceId));
+      setHasUnsavedChanges(true);
     }
   };
 
-  // Stage management
+  // Stage management with save tracking
   const handleAddStage = (e) => {
     e.preventDefault();
     if (newStage.label && newStage.label.trim()) {
@@ -229,6 +319,7 @@ const AdminPage = () => {
       setLeadStages([...leadStages, newStageObj]);
       setNewStage({ label: '' });
       setShowAddStageForm(false);
+      setHasUnsavedChanges(true);
     }
   };
 
@@ -243,6 +334,7 @@ const AdminPage = () => {
           stage.id === stageId ? { ...stage, label: newLabel.trim() } : stage
         )
       );
+      setHasUnsavedChanges(true);
     }
     setEditingStage(null);
   };
@@ -250,6 +342,104 @@ const AdminPage = () => {
   const handleDeleteStage = (stageId) => {
     if (window.confirm('Are you sure you want to delete this stage?')) {
       setLeadStages(stages => stages.filter(stage => stage.id !== stageId));
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  // Save all CRM customization changes to backend
+  const handleSaveCustomizations = async () => {
+    setIsSaving(true);
+    setSubmitStatus(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setSubmitStatus('error');
+        return;
+      }
+
+      const customizationData = {
+        leadFields,
+        leadSources,
+        leadStages
+      };
+
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/crm-settings`,
+        customizationData,
+        {
+          headers: { 
+            'x-auth-token': token,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setHasUnsavedChanges(false);
+        setSubmitStatus('success');
+        console.log('CRM settings saved successfully');
+      } else {
+        throw new Error(response.data.message || 'Failed to save settings');
+      }
+      
+      setTimeout(() => setSubmitStatus(null), 3000);
+    } catch (error) {
+      console.error('Error saving customizations:', error);
+      setSubmitStatus('error');
+      
+      // Show specific error message if available
+      if (error.response?.data?.errors) {
+        console.error('Validation errors:', error.response.data.errors);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDiscardChanges = async () => {
+    if (window.confirm('Are you sure you want to discard all unsaved changes?')) {
+      // Reload settings from backend
+      await fetchCRMSettings();
+      setHasUnsavedChanges(false);
+    }
+  };
+
+  const handleResetToDefaults = async () => {
+    if (window.confirm('Are you sure you want to reset all CRM settings to defaults? This cannot be undone.')) {
+      setIsSaving(true);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setSubmitStatus('error');
+          return;
+        }
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/crm-settings/reset`,
+          {},
+          {
+            headers: { 
+              'x-auth-token': token,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (response.data.success && response.data.data) {
+          const settings = response.data.data;
+          setLeadFields(settings.leadFields || []);
+          setLeadSources(settings.leadSources || []);
+          setLeadStages(settings.leadStages || []);
+          setHasUnsavedChanges(false);
+          setSubmitStatus('success');
+        }
+      } catch (error) {
+        console.error('Error resetting to defaults:', error);
+        setSubmitStatus('error');
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -523,10 +713,64 @@ const AdminPage = () => {
 
   const FieldCustomization = () => (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900">CRM Customization</h3>
-        <p className="text-gray-600">Customize lead and contact fields for your organization</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">CRM Customization</h3>
+          <p className="text-gray-600">Customize lead and contact fields for your organization</p>
+        </div>
+        
+        {/* Save/Discard Buttons */}
+        {hasUnsavedChanges && (
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">Unsaved changes</span>
+            </div>
+            <button
+              onClick={handleDiscardChanges}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              Discard
+            </button>
+            <button
+              onClick={handleSaveCustomizations}
+              disabled={isSaving}
+              className={`px-4 py-2 rounded-xl font-medium flex items-center space-x-2 transition-all ${
+                isSaving
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-600 to-blue-600 text-white hover:shadow-lg'
+              }`}
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Success/Error Messages */}
+      {submitStatus === 'success' && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center space-x-2">
+          <CheckCircle className="w-5 h-5 text-green-600" />
+          <span className="text-green-800 font-medium">CRM customizations saved successfully!</span>
+        </div>
+      )}
+
+      {submitStatus === 'error' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-2">
+          <AlertCircle className="w-5 h-5 text-red-600" />
+          <span className="text-red-800 font-medium">Error saving customizations. Please try again.</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Lead Fields */}

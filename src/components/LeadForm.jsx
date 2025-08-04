@@ -1,25 +1,29 @@
-// src/components/LeadForm.jsx (Updated - FirstName Optional)
+// src/components/LeadForm.jsx - Updated to use dynamic CRM settings
 import React, { useState } from 'react';
 import axios from 'axios';
-import { User, Mail, Phone, Globe, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, Phone, Globe, CheckCircle, AlertCircle, Building, Briefcase } from 'lucide-react';
+import { useCRMSettings } from '../hooks/useCRMSettings';
 
 const LeadForm = () => {
+  const { leadSources, leadFields, loading: settingsLoading, error: settingsError } = useCRMSettings();
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
+    company: '',
+    jobTitle: '',
     leadSource: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', or null
+  const [submitStatus, setSubmitStatus] = useState(null);
 
-  const { firstName, lastName, email, phone, leadSource } = formData;
+  const { firstName, lastName, email, phone, company, jobTitle, leadSource } = formData;
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear status when user starts typing again
     if (submitStatus) setSubmitStatus(null);
   };
 
@@ -31,7 +35,12 @@ const LeadForm = () => {
     const backendUrl = `${import.meta.env.VITE_API_URL}/api/leads`;
     
     try {
-      const res = await axios.post(backendUrl, formData);
+      const res = await axios.post(backendUrl, formData, {
+        headers: {
+          'x-auth-token': localStorage.getItem('token'),
+          'Content-Type': 'application/json'
+        }
+      });
       console.log('Lead created:', res.data);
       setSubmitStatus('success');
       
@@ -41,10 +50,11 @@ const LeadForm = () => {
         lastName: '',
         email: '',
         phone: '',
+        company: '',
+        jobTitle: '',
         leadSource: '',
       });
       
-      // Clear success message after 3 seconds
       setTimeout(() => setSubmitStatus(null), 3000);
       
     } catch (error) {
@@ -57,6 +67,99 @@ const LeadForm = () => {
 
   const inputClass = "w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200";
   const labelClass = "block text-sm font-medium text-gray-700 mb-2";
+
+  // Helper function to get field icon
+  const getFieldIcon = (fieldName) => {
+    switch (fieldName) {
+      case 'firstName':
+      case 'lastName':
+        return <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />;
+      case 'email':
+        return <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />;
+      case 'phone':
+        return <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />;
+      case 'company':
+        return <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />;
+      case 'jobTitle':
+        return <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />;
+      case 'leadSource':
+        return <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />;
+      default:
+        return <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />;
+    }
+  };
+
+  // Helper function to render form field
+  const renderFormField = (field) => {
+    if (field.type === 'select' && field.name === 'leadSource') {
+      return (
+        <div key={field.id}>
+          <label className={labelClass}>
+            {field.label} {field.required && <span className="text-red-500">*</span>}
+          </label>
+          <div className="relative">
+            {getFieldIcon(field.name)}
+            <select
+              name="leadSource"
+              value={leadSource}
+              onChange={onChange}
+              required={field.required}
+              className={`${inputClass} appearance-none cursor-pointer`}
+            >
+              <option value="">Select {field.label.toLowerCase()}</option>
+              {leadSources.map((source) => (
+                <option key={source.id} value={source.value}>
+                  {source.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div key={field.id}>
+        <label className={labelClass}>
+          {field.label} {field.required && <span className="text-red-500">*</span>}
+        </label>
+        <div className="relative">
+          {getFieldIcon(field.name)}
+          <input
+            type={field.type}
+            name={field.name}
+            value={formData[field.name] || ''}
+            onChange={onChange}
+            required={field.required}
+            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            className={inputClass}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  if (settingsLoading) {
+    return (
+      <div className="w-full max-w-md flex items-center justify-center py-8">
+        <div className="flex items-center space-x-2">
+          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-gray-600">Loading form settings...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (settingsError) {
+    return (
+      <div className="w-full max-w-md">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-2">
+          <AlertCircle className="w-5 h-5 text-red-600" />
+          <span className="text-red-800">Error loading form settings. Using defaults.</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md">
@@ -77,120 +180,26 @@ const LeadForm = () => {
       )}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        {/* First Name - UPDATED: Now Optional */}
-        <div>
-          <label className={labelClass}>
-            First Name {/* REMOVED: Required asterisk */}
-          </label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              name="firstName"
-              value={firstName}
-              onChange={onChange}
-              // REMOVED: required attribute
-              placeholder="Enter first name (optional)"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        {/* Last Name - KEPT: Still Required */}
-        <div>
-          <label className={labelClass}>
-            Last Name <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              name="lastName"
-              value={lastName}
-              onChange={onChange}
-              required
-              placeholder="Enter last name"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className={labelClass}>
-            Email Address 
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={onChange}
-              placeholder="Enter email address"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        {/* Phone */}
-        <div>
-          <label className={labelClass}>Phone</label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="tel"
-              name="phone"
-              value={phone}
-              onChange={onChange}
-              placeholder="Enter phone number"
-              className={inputClass}
-            />
-          </div>
-        </div>
-
-        {/* Lead Source */}
-        <div>
-          <label className={labelClass}>Lead Source</label>
-          <div className="relative">
-            <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <select
-              name="leadSource"
-              value={leadSource}
-              onChange={onChange}
-              className={`${inputClass} appearance-none cursor-pointer`}
-            >
-              <option value="">Select lead source</option>
-              <option value="website">Website</option>
-              <option value="social-media">Social Media</option>
-              <option value="referral">Referral</option>
-              <option value="email-campaign">Email Campaign</option>
-              <option value="cold-call">Cold Call</option>
-              <option value="trade-show">Trade Show</option>
-              <option value="google-ads">Google Ads</option>
-              <option value="linkedin">LinkedIn</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-        </div>
+        {/* Render dynamic fields based on CRM settings */}
+        {leadFields.map(field => renderFormField(field))}
 
         {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
+          className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
             isSubmitting
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white transform hover:scale-105'
+              : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white'
           }`}
         >
           {isSubmitting ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Adding Lead...</span>
-            </>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span>Creating Lead...</span>
+            </div>
           ) : (
-            <span>Add Lead</span>
+            'Add Lead'
           )}
         </button>
       </form>
