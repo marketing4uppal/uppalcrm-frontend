@@ -1,4 +1,4 @@
-// src/pages/AdminPage.jsx
+// src/pages/AdminPage.jsx - Simplified and Bug-Free Version
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -7,8 +7,6 @@ import {
   Settings, 
   Plus, 
   Search, 
-  MoreVertical, 
-  Shield, 
   Edit,
   Trash2,
   ArrowLeft,
@@ -16,32 +14,32 @@ import {
   Sliders,
   User,
   Mail,
-  Phone,
+  Shield,
   Building,
   CheckCircle,
   AlertCircle,
   Eye,
   EyeOff,
-  Save,
   X
 } from 'lucide-react';
 
 const AdminPage = () => {
+  // Main state
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Form states
+  const [showAddUserForm, setShowAddUserForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showAddSourceForm, setShowAddSourceForm] = useState(false);
   const [showAddStageForm, setShowAddStageForm] = useState(false);
   const [editingSource, setEditingSource] = useState(null);
   const [editingStage, setEditingStage] = useState(null);
 
-  // Form data for new user
+  // Form data
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -50,11 +48,10 @@ const AdminPage = () => {
     role: 'user'
   });
 
-  // New source/stage form data
-  const [newSource, setNewSource] = useState({ value: '', label: '' });
-  const [newStage, setNewStage] = useState({ value: '', label: '' });
+  const [newSource, setNewSource] = useState({ label: '' });
+  const [newStage, setNewStage] = useState({ label: '' });
 
-  // Lead/Contact field customization state
+  // Static data for customization
   const [leadFields, setLeadFields] = useState([
     { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: true, active: true },
     { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },
@@ -81,19 +78,35 @@ const AdminPage = () => {
     { id: 5, value: 'Lost', label: 'Lost', active: true }
   ]);
 
+  // Load users on component mount
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (activeTab === 'users') {
+      fetchUsers();
+    }
+  }, [activeTab]);
 
+  // API Functions
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const backendUrl = `${import.meta.env.VITE_API_URL}/api/users`;
-      const res = await axios.get(backendUrl);
-      setUsers(res.data);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setSubmitStatus('error');
+        return;
+      }
+
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`, {
+        headers: { 
+          'x-auth-token': token,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching users:', error);
       setSubmitStatus('error');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -105,13 +118,25 @@ const AdminPage = () => {
     setSubmitStatus(null);
 
     try {
-      const backendUrl = `${import.meta.env.VITE_API_URL}/api/users`;
-      const res = await axios.post(backendUrl, formData);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setSubmitStatus('error');
+        return;
+      }
+
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, formData, {
+        headers: { 
+          'x-auth-token': token,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      setUsers([...users, res.data]);
       setSubmitStatus('success');
       setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'user' });
       setShowAddUserForm(false);
+      
+      // Refresh users list
+      await fetchUsers();
       
       setTimeout(() => setSubmitStatus(null), 3000);
     } catch (error) {
@@ -122,7 +147,12 @@ const AdminPage = () => {
     }
   };
 
-  // Toggle field active state
+  // Form handlers
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Toggle functions
   const toggleFieldActive = (fieldId) => {
     setLeadFields(fields => 
       fields.map(field => 
@@ -131,7 +161,6 @@ const AdminPage = () => {
     );
   };
 
-  // Toggle source active state
   const toggleSourceActive = (sourceId) => {
     setLeadSources(sources => 
       sources.map(source => 
@@ -140,7 +169,6 @@ const AdminPage = () => {
     );
   };
 
-  // Toggle stage active state
   const toggleStageActive = (stageId) => {
     setLeadStages(stages => 
       stages.map(stage => 
@@ -149,82 +177,87 @@ const AdminPage = () => {
     );
   };
 
-  // Add new source
+  // Source management
   const handleAddSource = (e) => {
     e.preventDefault();
-    if (newSource.value && newSource.label) {
-      const newId = Math.max(...leadSources.map(s => s.id)) + 1;
-      setLeadSources([...leadSources, {
-        id: newId,
-        value: newSource.value.toLowerCase().replace(/\s+/g, '-'),
-        label: newSource.label,
+    if (newSource.label && newSource.label.trim()) {
+      const maxId = leadSources.length > 0 ? Math.max(...leadSources.map(s => s.id)) : 0;
+      const newSourceObj = {
+        id: maxId + 1,
+        value: newSource.label.toLowerCase().replace(/\s+/g, '-'),
+        label: newSource.label.trim(),
         active: true
-      }]);
-      setNewSource({ value: '', label: '' });
+      };
+      setLeadSources([...leadSources, newSourceObj]);
+      setNewSource({ label: '' });
       setShowAddSourceForm(false);
     }
   };
 
-  // Add new stage
+  const handleEditSource = (sourceId) => {
+    setEditingSource(sourceId);
+  };
+
+  const handleSaveSource = (sourceId, newLabel) => {
+    if (newLabel && newLabel.trim()) {
+      setLeadSources(sources =>
+        sources.map(source =>
+          source.id === sourceId ? { ...source, label: newLabel.trim() } : source
+        )
+      );
+    }
+    setEditingSource(null);
+  };
+
+  const handleDeleteSource = (sourceId) => {
+    if (window.confirm('Are you sure you want to delete this source?')) {
+      setLeadSources(sources => sources.filter(source => source.id !== sourceId));
+    }
+  };
+
+  // Stage management
   const handleAddStage = (e) => {
     e.preventDefault();
-    if (newStage.value && newStage.label) {
-      const newId = Math.max(...leadStages.map(s => s.id)) + 1;
-      setLeadStages([...leadStages, {
-        id: newId,
-        value: newStage.value,
-        label: newStage.label,
+    if (newStage.label && newStage.label.trim()) {
+      const maxId = leadStages.length > 0 ? Math.max(...leadStages.map(s => s.id)) : 0;
+      const newStageObj = {
+        id: maxId + 1,
+        value: newStage.label.trim(),
+        label: newStage.label.trim(),
         active: true
-      }]);
-      setNewStage({ value: '', label: '' });
+      };
+      setLeadStages([...leadStages, newStageObj]);
+      setNewStage({ label: '' });
       setShowAddStageForm(false);
     }
   };
 
-  // Edit source
-  const handleEditSource = (source) => {
-    setEditingSource(source.id);
+  const handleEditStage = (stageId) => {
+    setEditingStage(stageId);
   };
 
-  // Save edited source
-  const handleSaveSource = (sourceId, newLabel) => {
-    setLeadSources(sources =>
-      sources.map(source =>
-        source.id === sourceId ? { ...source, label: newLabel } : source
-      )
-    );
-    setEditingSource(null);
-  };
-
-  // Delete source
-  const handleDeleteSource = (sourceId) => {
-    setLeadSources(sources => sources.filter(source => source.id !== sourceId));
-  };
-
-  // Edit stage
-  const handleEditStage = (stage) => {
-    setEditingStage(stage.id);
-  };
-
-  // Save edited stage
   const handleSaveStage = (stageId, newLabel) => {
-    setLeadStages(stages =>
-      stages.map(stage =>
-        stage.id === stageId ? { ...stage, label: newLabel } : stage
-      )
-    );
+    if (newLabel && newLabel.trim()) {
+      setLeadStages(stages =>
+        stages.map(stage =>
+          stage.id === stageId ? { ...stage, label: newLabel.trim() } : stage
+        )
+      );
+    }
     setEditingStage(null);
   };
 
-  // Delete stage
   const handleDeleteStage = (stageId) => {
-    setLeadStages(stages => stages.filter(stage => stage.id !== stageId));
+    if (window.confirm('Are you sure you want to delete this stage?')) {
+      setLeadStages(stages => stages.filter(stage => stage.id !== stageId));
+    }
   };
 
+  // Utility functions
   const filteredUsers = users.filter(user =>
-    user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.firstName && user.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.lastName && user.lastName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getRoleBadgeColor = (role) => {
@@ -233,6 +266,7 @@ const AdminPage = () => {
       : 'bg-blue-100 text-blue-800 border-blue-200';
   };
 
+  // Components
   const ToggleSwitch = ({ isActive, onChange }) => (
     <button 
       onClick={onChange}
@@ -255,19 +289,38 @@ const AdminPage = () => {
         </div>
         <button
           onClick={() => setShowAddUserForm(true)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
         >
           <Plus className="w-4 h-4" />
           <span>Add User</span>
         </button>
       </div>
 
+      {/* Success/Error Messages */}
+      {submitStatus === 'success' && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center space-x-2">
+          <CheckCircle className="w-5 h-5 text-green-600" />
+          <span className="text-green-800 font-medium">User added successfully!</span>
+        </div>
+      )}
+
+      {submitStatus === 'error' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-2">
+          <AlertCircle className="w-5 h-5 text-red-600" />
+          <span className="text-red-800 font-medium">Error adding user. Please try again.</span>
+        </div>
+      )}
+
+      {/* Add User Form */}
       {showAddUserForm && (
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-lg font-semibold text-gray-900">Add New User</h4>
             <button
-              onClick={() => setShowAddUserForm(false)}
+              onClick={() => {
+                setShowAddUserForm(false);
+                setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'user' });
+              }}
               className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg"
             >
               <X className="w-4 h-4" />
@@ -276,85 +329,50 @@ const AdminPage = () => {
 
           <form onSubmit={handleAddUser} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                First Name <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter first name"
-                />
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter first name"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Last Name <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter last name"
-                />
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter last name"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter email address"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  required
-                  className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter email address"
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
               <select
+                name="role"
                 value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
+                onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="user">User</option>
@@ -363,78 +381,139 @@ const AdminPage = () => {
             </div>
 
             <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  minLength="6"
+                  className="w-full px-4 py-3 pr-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter password (min 6 characters)"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddUserForm(false);
+                  setFormData({ firstName: '', lastName: '', email: '', password: '', role: 'user' });
+                }}
+                className="flex-1 py-3 px-6 rounded-xl font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+                className={`flex-1 py-3 px-6 rounded-xl font-medium flex items-center justify-center space-x-2 ${
+                  loading
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg'
+                }`}
               >
-                {loading ? 'Adding User...' : 'Add User'}
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Adding...</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    <span>Add User</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-gray-900">Current Users ({filteredUsers.length})</h4>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-64 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-        </div>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <input
+          type="text"
+          placeholder="Search users..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
+      {/* Users Table */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">User</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Email</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Role</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold mr-3">
-                        {user.firstName?.[0]}{user.lastName?.[0]}
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {user.firstName} {user.lastName}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
-                      {user.role === 'admin' ? 'Admin' : 'User'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-red-600 hover:bg-red-50 rounded">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+              {loading ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-8 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Loading users...
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                    {users.length === 0 ? 'No users found' : 'No users match your search'}
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr key={user._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                          <User className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {user.firstName || ''} {user.lastName || ''}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">{user.email || ''}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
+                        {user.role === 'admin' ? 'Admin' : 'User'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button className="p-1 text-red-600 hover:bg-red-50 rounded">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -463,12 +542,10 @@ const AdminPage = () => {
                     <p className="text-xs text-gray-500">{field.type} • {field.required ? 'Required' : 'Optional'}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <ToggleSwitch 
-                    isActive={field.active} 
-                    onChange={() => toggleFieldActive(field.id)}
-                  />
-                </div>
+                <ToggleSwitch 
+                  isActive={field.active} 
+                  onChange={() => toggleFieldActive(field.id)}
+                />
               </div>
             ))}
           </div>
@@ -493,18 +570,24 @@ const AdminPage = () => {
                   type="text"
                   placeholder="Source label (e.g., LinkedIn)"
                   value={newSource.label}
-                  onChange={(e) => setNewSource({...newSource, label: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  onChange={(e) => setNewSource({ label: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
                 <div className="flex space-x-2">
-                  <button type="submit" className="px-3 py-1 bg-blue-600 text-white text-sm rounded">
+                  <button 
+                    type="submit" 
+                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                  >
                     Add
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => setShowAddSourceForm(false)}
-                    className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded"
+                    onClick={() => {
+                      setShowAddSourceForm(false);
+                      setNewSource({ label: '' });
+                    }}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
                   >
                     Cancel
                   </button>
@@ -522,27 +605,21 @@ const AdminPage = () => {
                     {editingSource === source.id ? (
                       <input
                         type="text"
-                        value={source.label}
-                        onChange={(e) => {
-                          const newLabel = e.target.value;
-                          setLeadSources(sources =>
-                            sources.map(s => s.id === source.id ? {...s, label: newLabel} : s)
-                          );
-                        }}
-                        onBlur={() => setEditingSource(null)}
-                        onKeyPress={(e) => {
+                        defaultValue={source.label}
+                        onBlur={(e) => handleSaveSource(source.id, e.target.value)}
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter') {
+                            handleSaveSource(source.id, e.target.value);
+                          }
+                          if (e.key === 'Escape') {
                             setEditingSource(null);
                           }
                         }}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         autoFocus
                       />
                     ) : (
-                      <div>
-                        <p className="font-medium text-gray-900">{source.label}</p>
-                        <p className="text-xs text-gray-500">{source.value}</p>
-                      </div>
+                      <p className="font-medium text-gray-900">{source.label}</p>
                     )}
                   </div>
                 </div>
@@ -551,17 +628,17 @@ const AdminPage = () => {
                     isActive={source.active} 
                     onChange={() => toggleSourceActive(source.id)}
                   />
-                  <button 
-                    onClick={() => handleEditSource(source)}
-                    className="p-1 text-gray-400 hover:text-gray-600"
+                  <button
+                    onClick={() => handleEditSource(source.id)}
+                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-3 h-3" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDeleteSource(source.id)}
-                    className="p-1 text-red-400 hover:text-red-600"
+                    className="p-1 text-red-600 hover:bg-red-50 rounded"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               </div>
@@ -575,7 +652,7 @@ const AdminPage = () => {
             <h4 className="font-semibold text-gray-900">Lead Stages</h4>
             <button
               onClick={() => setShowAddStageForm(true)}
-              className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
+              className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -586,20 +663,26 @@ const AdminPage = () => {
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Stage name (e.g., Proposal Sent)"
+                  placeholder="Stage label (e.g., Follow-up)"
                   value={newStage.label}
-                  onChange={(e) => setNewStage({...newStage, label: e.target.value, value: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  onChange={(e) => setNewStage({ label: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
                 <div className="flex space-x-2">
-                  <button type="submit" className="px-3 py-1 bg-purple-600 text-white text-sm rounded">
+                  <button 
+                    type="submit" 
+                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                  >
                     Add
                   </button>
                   <button 
                     type="button" 
-                    onClick={() => setShowAddStageForm(false)}
-                    className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded"
+                    onClick={() => {
+                      setShowAddStageForm(false);
+                      setNewStage({ label: '' });
+                    }}
+                    className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded hover:bg-gray-400"
                   >
                     Cancel
                   </button>
@@ -617,27 +700,21 @@ const AdminPage = () => {
                     {editingStage === stage.id ? (
                       <input
                         type="text"
-                        value={stage.label}
-                        onChange={(e) => {
-                          const newLabel = e.target.value;
-                          setLeadStages(stages =>
-                            stages.map(s => s.id === stage.id ? {...s, label: newLabel, value: newLabel} : s)
-                          );
-                        }}
-                        onBlur={() => setEditingStage(null)}
-                        onKeyPress={(e) => {
+                        defaultValue={stage.label}
+                        onBlur={(e) => handleSaveStage(stage.id, e.target.value)}
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter') {
+                            handleSaveStage(stage.id, e.target.value);
+                          }
+                          if (e.key === 'Escape') {
                             setEditingStage(null);
                           }
                         }}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
                         autoFocus
                       />
                     ) : (
-                      <div>
-                        <p className="font-medium text-gray-900">{stage.label}</p>
-                        <p className="text-xs text-gray-500">{stage.value}</p>
-                      </div>
+                      <p className="font-medium text-gray-900">{stage.label}</p>
                     )}
                   </div>
                 </div>
@@ -646,17 +723,17 @@ const AdminPage = () => {
                     isActive={stage.active} 
                     onChange={() => toggleStageActive(stage.id)}
                   />
-                  <button 
-                    onClick={() => handleEditStage(stage)}
-                    className="p-1 text-gray-400 hover:text-gray-600"
+                  <button
+                    onClick={() => handleEditStage(stage.id)}
+                    className="p-1 text-green-600 hover:bg-green-50 rounded"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-3 h-3" />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDeleteStage(stage.id)}
-                    className="p-1 text-red-400 hover:text-red-600"
+                    className="p-1 text-red-600 hover:bg-red-50 rounded"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
               </div>
@@ -664,48 +741,28 @@ const AdminPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Save Configuration Button */}
-      <div className="flex justify-end">
-        <button className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
-          <Save className="w-4 h-4" />
-          <span>Save Configuration</span>
-        </button>
-      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
-            <Link
-              to="/dashboard"
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-xl transition-colors"
+            <Link 
+              to="/" 
+              className="p-2 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-gray-600">Manage your CRM settings and users</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-gray-600 mt-1">Manage your CRM system and users</p>
             </div>
           </div>
-
-          {/* Status Messages */}
-          {submitStatus === 'success' && (
-            <div className="flex items-center space-x-2 bg-green-50 text-green-800 px-4 py-2 rounded-xl border border-green-200">
-              <CheckCircle className="w-5 h-5" />
-              <span>Changes saved successfully!</span>
-            </div>
-          )}
-          
-          {submitStatus === 'error' && (
-            <div className="flex items-center space-x-2 bg-red-50 text-red-800 px-4 py-2 rounded-xl border border-red-200">
-              <AlertCircle className="w-5 h-5" />
-              <span>Error saving changes. Please try again.</span>
-            </div>
-          )}
         </div>
 
         {/* Navigation Tabs */}
