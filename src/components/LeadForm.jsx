@@ -6,6 +6,11 @@ import { useCRMSettings } from '../hooks/useCRMSettings';
 
 const LeadForm = () => {
   const { leadSources, leadFields, loading: settingsLoading, error: settingsError } = useCRMSettings();
+
+// ADD THIS DEBUG CODE:
+console.log('🔍 DEBUG - leadFields from useCRMSettings:', leadFields);
+console.log('🔍 DEBUG - First Name field:', leadFields.find(f => f.name === 'firstName'));
+console.log('🔍 DEBUG - Email field:', leadFields.find(f => f.name === 'email'));
   
   const [formData, setFormData] = useState({
     firstName: '',
