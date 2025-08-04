@@ -1,4 +1,4 @@
-// src/components/LeadTableRow.jsx (Updated with Delete Button)
+// src/components/LeadTableRow.jsx (Updated with Single Name Display)
 import React from 'react';
 import { Mail, Phone, Eye, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { getSourceBadgeColor, formatSource, formatDate, getTimeAgo } from '../utils/leadUtils';
@@ -23,20 +23,52 @@ const LeadTableRow = ({ lead, onLeadSelect, onEditLead, onDeleteLead }) => {
     });
   };
 
+  // UPDATED: Function to get full name display
+  const getDisplayName = (lead) => {
+    const firstName = lead.firstName ? lead.firstName.trim() : '';
+    const lastName = lead.lastName ? lead.lastName.trim() : '';
+    
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    } else if (lastName) {
+      return lastName;
+    } else if (firstName) {
+      return firstName;
+    } else {
+      return 'Unknown Lead';
+    }
+  };
+
+  // UPDATED: Function to get initials for avatar
+  const getInitials = (lead) => {
+    const firstName = lead.firstName ? lead.firstName.trim() : '';
+    const lastName = lead.lastName ? lead.lastName.trim() : '';
+    
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`;
+    } else if (lastName) {
+      return lastName.substring(0, 2).toUpperCase();
+    } else if (firstName) {
+      return firstName.substring(0, 2).toUpperCase();
+    } else {
+      return 'UL'; // Unknown Lead
+    }
+  };
+
   return (
     <tr 
       className="hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100"
       onClick={() => onLeadSelect(lead)}
     >
-      {/* Name Column */}
+      {/* Name Column - UPDATED: Single name display */}
       <td className="px-4 py-3 whitespace-nowrap">
         <div className="flex items-center">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
-            {lead.firstName[0]}{lead.lastName[0]}
+            {getInitials(lead)}
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900">
-              {lead.firstName} {lead.lastName}
+              {getDisplayName(lead)}
             </div>
             {lead.leadStage && (
               <div className="text-xs text-gray-500">{lead.leadStage}</div>
@@ -74,19 +106,19 @@ const LeadTableRow = ({ lead, onLeadSelect, onEditLead, onDeleteLead }) => {
         )}
       </td>
 
-      {/* Created Date - Professional Single Line */}
+      {/* Created Date */}
       <td className="px-4 py-3 whitespace-nowrap">
         <div className="text-sm text-gray-900">{formatCompactDate(lead.createdAt)}</div>
         <div className="text-xs text-gray-500">{formatTime(lead.createdAt)}</div>
       </td>
 
-      {/* Modified Date - Professional Single Line */}
+      {/* Modified Date */}
       <td className="px-4 py-3 whitespace-nowrap">
         <div className="text-sm text-gray-900">{formatCompactDate(lead.updatedAt)}</div>
         <div className="text-xs text-gray-500">{formatTime(lead.updatedAt)}</div>
       </td>
 
-      {/* Actions - Clean and Professional (UPDATED with Delete Button) */}
+      {/* Actions */}
       <td className="px-4 py-3 whitespace-nowrap text-right">
         <div className="flex items-center justify-end space-x-2">
           <button 
@@ -109,7 +141,6 @@ const LeadTableRow = ({ lead, onLeadSelect, onEditLead, onDeleteLead }) => {
           >
             <Edit className="w-4 h-4" />
           </button>
-          {/* NEW: Delete Button */}
           <button 
             onClick={(e) => {
               e.stopPropagation();
