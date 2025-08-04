@@ -1,4 +1,4 @@
-// src/components/LeadForm.jsx
+// src/components/LeadForm.jsx (Updated - FirstName Optional)
 import React, { useState } from 'react';
 import axios from 'axios';
 import { User, Mail, Phone, Globe, CheckCircle, AlertCircle } from 'lucide-react';
@@ -77,10 +77,10 @@ const LeadForm = () => {
       )}
 
       <form onSubmit={onSubmit} className="space-y-4">
-        {/* First Name */}
+        {/* First Name - UPDATED: Now Optional */}
         <div>
           <label className={labelClass}>
-            First Name <span className="text-red-500">*</span>
+            First Name {/* REMOVED: Required asterisk */}
           </label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -89,14 +89,14 @@ const LeadForm = () => {
               name="firstName"
               value={firstName}
               onChange={onChange}
-              required
-              placeholder="Enter first name"
+              // REMOVED: required attribute
+              placeholder="Enter first name (optional)"
               className={inputClass}
             />
           </div>
         </div>
 
-        {/* Last Name */}
+        {/* Last Name - KEPT: Still Required */}
         <div>
           <label className={labelClass}>
             Last Name <span className="text-red-500">*</span>
@@ -168,6 +168,8 @@ const LeadForm = () => {
               <option value="email-campaign">Email Campaign</option>
               <option value="cold-call">Cold Call</option>
               <option value="trade-show">Trade Show</option>
+              <option value="google-ads">Google Ads</option>
+              <option value="linkedin">LinkedIn</option>
               <option value="other">Other</option>
             </select>
           </div>
@@ -177,19 +179,19 @@ const LeadForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+          className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
             isSubmitting
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white'
+              : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white transform hover:scale-105'
           }`}
         >
           {isSubmitting ? (
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              <span>Creating Lead...</span>
-            </div>
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Adding Lead...</span>
+            </>
           ) : (
-            'Add Lead'
+            <span>Add Lead</span>
           )}
         </button>
       </form>

@@ -1,8 +1,7 @@
-// src/components/EditLead.jsx
+// src/components/EditLead.jsx (Updated - FirstName Optional)
 import React, { useState } from 'react';
 import axios from 'axios';
 import { User, Mail, Phone, Globe, CheckCircle, AlertCircle, X, Save } from 'lucide-react';
-import { syncLeadToContact } from '../utils/syncUtils';
 
 const EditLead = ({ lead, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -11,66 +10,45 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
     email: lead.email || '',
     phone: lead.phone || '',
     leadSource: lead.leadSource || '',
-    leadStage: lead.leadStage || 'New'
+    leadStage: lead.leadStage || 'New',
+    company: lead.company || '',
+    jobTitle: lead.jobTitle || '',
+    budget: lead.budget || 'not-specified',
+    timeline: lead.timeline || 'not-specified',
+    notes: lead.notes || ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [syncStatus, setSyncStatus] = useState(null);
 
-  const { firstName, lastName, email, phone, leadSource, leadStage } = formData;
+  const { firstName, lastName, email, phone, leadSource, leadStage, company, jobTitle, budget, timeline, notes } = formData;
 
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (submitStatus) setSubmitStatus(null);
-    if (syncStatus) setSyncStatus(null);
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
-    setSyncStatus(null);
 
     const backendUrl = `${import.meta.env.VITE_API_URL}/api/leads/${lead._id}`;
     
     try {
       const res = await axios.put(backendUrl, formData);
       console.log('Lead updated:', res.data);
-      
-      const updatedLead = res.data.lead || res.data;
       setSubmitStatus('success');
-      
-      // Check if sync-relevant fields changed
-      const syncRelevantFields = ['firstName', 'lastName', 'email', 'phone'];
-      const hasRelevantChanges = syncRelevantFields.some(field => 
-        lead[field] !== formData[field]
-      );
-      
-      // Sync changes to associated contact if relevant fields changed
-      if (hasRelevantChanges) {
-        setSyncStatus('syncing');
-        try {
-          await syncLeadToContact(updatedLead);
-          console.log('Lead-Contact sync completed successfully');
-          setSyncStatus('success');
-        } catch (syncError) {
-          console.warn('Lead-Contact sync failed, but lead was updated:', syncError);
-          setSyncStatus('warning');
-          // Don't fail the whole operation if sync fails
-        }
-      }
       
       // Call the update callback to refresh the parent component
       if (onUpdate) {
-        onUpdate(updatedLead);
+        onUpdate(res.data.lead || res.data);
       }
       
-      // Close modal after delay (longer if sync occurred)
-      const delay = hasRelevantChanges ? 2000 : 1500;
+      // Close modal after short delay
       setTimeout(() => {
         onClose();
-      }, delay);
+      }, 1500);
       
     } catch (error) {
       console.error('Error updating lead:', error.response?.data || error.message);
@@ -85,14 +63,23 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-gray-900">Edit Lead</h3>
-          <button 
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Edit Lead</h2>
+              <p className="text-sm text-gray-500">{lead.firstName} {lead.lastName}</p>
+            </div>
+          </div>
+          <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
@@ -101,28 +88,6 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center space-x-2">
             <CheckCircle className="w-5 h-5 text-green-600" />
             <span className="text-green-800 font-medium">Lead updated successfully!</span>
-          </div>
-        )}
-
-        {/* Sync Status Messages */}
-        {syncStatus === 'syncing' && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center space-x-2">
-            <div className="w-5 h-5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
-            <span className="text-blue-800 font-medium">Syncing changes to contact...</span>
-          </div>
-        )}
-
-        {syncStatus === 'success' && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center space-x-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-green-800 font-medium">Contact synchronized successfully!</span>
-          </div>
-        )}
-
-        {syncStatus === 'warning' && (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center space-x-2">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-            <span className="text-yellow-800 font-medium">Lead saved, but contact sync failed.</span>
           </div>
         )}
 
@@ -135,10 +100,10 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
         )}
 
         <form onSubmit={onSubmit} className="space-y-4">
-          {/* First Name */}
+          {/* First Name - UPDATED: Now Optional */}
           <div>
             <label className={labelClass}>
-              First Name <span className="text-red-500">*</span>
+              First Name {/* REMOVED: Required asterisk */}
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -147,14 +112,14 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
                 name="firstName"
                 value={firstName}
                 onChange={onChange}
-                required
-                placeholder="Enter first name"
+                // REMOVED: required attribute
+                placeholder="Enter first name (optional)"
                 className={inputClass}
               />
             </div>
           </div>
 
-          {/* Last Name */}
+          {/* Last Name - KEPT: Still Required */}
           <div>
             <label className={labelClass}>
               Last Name <span className="text-red-500">*</span>
@@ -226,6 +191,8 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
                 <option value="email-campaign">Email Campaign</option>
                 <option value="cold-call">Cold Call</option>
                 <option value="trade-show">Trade Show</option>
+                <option value="google-ads">Google Ads</option>
+                <option value="linkedin">LinkedIn</option>
                 <option value="other">Other</option>
               </select>
             </div>
@@ -234,24 +201,96 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
           {/* Lead Stage */}
           <div>
             <label className={labelClass}>Lead Stage</label>
-            <div className="relative">
-              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <select
-                name="leadStage"
-                value={leadStage}
-                onChange={onChange}
-                className={`${inputClass} appearance-none cursor-pointer`}
-              >
-                <option value="New">New</option>
-                <option value="Contacted">Contacted</option>
-                <option value="Qualified">Qualified</option>
-                <option value="Won">Won</option>
-                <option value="Lost">Lost</option>
-              </select>
-            </div>
+            <select
+              name="leadStage"
+              value={leadStage}
+              onChange={onChange}
+              className={`${inputClass} appearance-none cursor-pointer`}
+            >
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Qualified">Qualified</option>
+              <option value="Won">Won</option>
+              <option value="Lost">Lost</option>
+            </select>
           </div>
 
-          {/* Submit Button */}
+          {/* Company */}
+          <div>
+            <label className={labelClass}>Company</label>
+            <input
+              type="text"
+              name="company"
+              value={company}
+              onChange={onChange}
+              placeholder="Enter company name"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+
+          {/* Job Title */}
+          <div>
+            <label className={labelClass}>Job Title</label>
+            <input
+              type="text"
+              name="jobTitle"
+              value={jobTitle}
+              onChange={onChange}
+              placeholder="Enter job title"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+
+          {/* Budget */}
+          <div>
+            <label className={labelClass}>Budget</label>
+            <select
+              name="budget"
+              value={budget}
+              onChange={onChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
+            >
+              <option value="not-specified">Not Specified</option>
+              <option value="under-100">Under $100</option>
+              <option value="100-500">$100 - $500</option>
+              <option value="500-1000">$500 - $1,000</option>
+              <option value="1000-5000">$1,000 - $5,000</option>
+              <option value="5000+">$5,000+</option>
+            </select>
+          </div>
+
+          {/* Timeline */}
+          <div>
+            <label className={labelClass}>Timeline</label>
+            <select
+              name="timeline"
+              value={timeline}
+              onChange={onChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
+            >
+              <option value="not-specified">Not Specified</option>
+              <option value="immediate">Immediate</option>
+              <option value="1-month">1 Month</option>
+              <option value="1-3-months">1-3 Months</option>
+              <option value="3-6-months">3-6 Months</option>
+              <option value="6-12-months">6-12 Months</option>
+            </select>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className={labelClass}>Notes</label>
+            <textarea
+              name="notes"
+              value={notes}
+              onChange={onChange}
+              placeholder="Additional notes about this lead"
+              rows="3"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+            />
+          </div>
+
+          {/* Submit Buttons */}
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
@@ -266,12 +305,12 @@ const EditLead = ({ lead, onClose, onUpdate }) => {
               className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 ${
                 isSubmitting
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg text-white transform hover:scale-105'
+                  : 'bg-gradient-to-r from-green-600 to-blue-600 hover:shadow-lg text-white transform hover:scale-105'
               }`}
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Updating...</span>
                 </>
               ) : (
