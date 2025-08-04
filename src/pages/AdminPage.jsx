@@ -1,51 +1,4 @@
-{/* Save/Discard Buttons */}
-        {hasUnsavedChanges && (
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-sm font-medium">Unsaved changes</span>
-            </div>
-            <button
-              onClick={handleDiscardChanges}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              Discard
-            </button>
-            <button
-              onClick={handleSaveCustomizations}
-              disabled={isSaving}
-              className={`px-4 py-2 rounded-xl font-medium flex items-center space-x-2 transition-all ${
-                isSaving
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-600 to-blue-600 text-white hover:shadow-lg'
-              }`}
-            >
-              {isSaving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Save Changes</span>
-                </>
-              )}
-            </button>
-          </div>
-        )}
-        
-        {/* Reset to Defaults Button */}
-        {!hasUnsavedChanges && (
-          <button
-            onClick={handleResetToDefaults}
-            disabled={isSaving}
-            className="px-4 py-2 text-red-700 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors flex items-center space-x-2"
-          >
-            <Settings className="w-4 h-4" />
-            <span>Reset to Defaults</span>
-          </button>
-        )}// src/pages/AdminPage.jsx - Simplified and Bug-Free Version
+// src/pages/AdminPage.jsx - Simplified and Robust Version
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -67,8 +20,7 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  X,
-  Save
+  X
 } from 'lucide-react';
 
 const AdminPage = () => {
@@ -78,8 +30,6 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   // Form states
   const [showAddUserForm, setShowAddUserForm] = useState(false);
@@ -101,73 +51,44 @@ const AdminPage = () => {
   const [newSource, setNewSource] = useState({ label: '' });
   const [newStage, setNewStage] = useState({ label: '' });
 
-  // Static data for customization
-  const [leadFields, setLeadFields] = useState([
-    { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: true, active: true },
-    { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },
-    { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true },
-    { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true },
-    { id: 5, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true }
-  ]);
+  // CRM Settings state - simplified
+  const [crmSettings, setCrmSettings] = useState({
+    leadFields: [
+      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: true, active: true },
+      { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },
+      { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true },
+      { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true },
+      { id: 5, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true }
+    ],
+    leadSources: [
+      { id: 1, value: 'website', label: 'Website', active: true },
+      { id: 2, value: 'social-media', label: 'Social Media', active: true },
+      { id: 3, value: 'referral', label: 'Referral', active: true },
+      { id: 4, value: 'email-campaign', label: 'Email Campaign', active: true },
+      { id: 5, value: 'cold-call', label: 'Cold Call', active: true },
+      { id: 6, value: 'trade-show', label: 'Trade Show', active: true },
+      { id: 7, value: 'other', label: 'Other', active: true }
+    ],
+    leadStages: [
+      { id: 1, value: 'New', label: 'New', active: true },
+      { id: 2, value: 'Contacted', label: 'Contacted', active: true },
+      { id: 3, value: 'Qualified', label: 'Qualified', active: true },
+      { id: 4, value: 'Won', label: 'Won', active: true },
+      { id: 5, value: 'Lost', label: 'Lost', active: true }
+    ]
+  });
 
-  const [leadSources, setLeadSources] = useState([
-    { id: 1, value: 'website', label: 'Website', active: true },
-    { id: 2, value: 'social-media', label: 'Social Media', active: true },
-    { id: 3, value: 'referral', label: 'Referral', active: true },
-    { id: 4, value: 'email-campaign', label: 'Email Campaign', active: true },
-    { id: 5, value: 'cold-call', label: 'Cold Call', active: true },
-    { id: 6, value: 'trade-show', label: 'Trade Show', active: true },
-    { id: 7, value: 'other', label: 'Other', active: true }
-  ]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [leadStages, setLeadStages] = useState([
-    { id: 1, value: 'New', label: 'New', active: true },
-    { id: 2, value: 'Contacted', label: 'Contacted', active: true },
-    { id: 3, value: 'Qualified', label: 'Qualified', active: true },
-    { id: 4, value: 'Won', label: 'Won', active: true },
-    { id: 5, value: 'Lost', label: 'Lost', active: true }
-  ]);
-
-  // Load users on component mount
+  // Load data on component mount
   useEffect(() => {
     if (activeTab === 'users') {
       fetchUsers();
     } else if (activeTab === 'customization') {
-      fetchCRMSettings();
+      loadCRMSettings();
     }
   }, [activeTab]);
-
-  // Load CRM settings from backend
-  const fetchCRMSettings = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setSubmitStatus('error');
-        return;
-      }
-
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/crm-settings`, {
-        headers: { 
-          'x-auth-token': token,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.data.success && response.data.data) {
-        const settings = response.data.data;
-        setLeadFields(settings.leadFields || []);
-        setLeadSources(settings.leadSources || []);
-        setLeadStages(settings.leadStages || []);
-        setHasUnsavedChanges(false);
-      }
-    } catch (error) {
-      console.error('Error fetching CRM settings:', error);
-      setSubmitStatus('error');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // API Functions
   const fetchUsers = async () => {
@@ -175,7 +96,7 @@ const AdminPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        setSubmitStatus('error');
+        console.error('No token found');
         return;
       }
 
@@ -191,6 +112,38 @@ const AdminPage = () => {
       console.error('Error fetching users:', error);
       setSubmitStatus('error');
       setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCRMSettings = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/crm-settings`, {
+        headers: { 
+          'x-auth-token': token,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data.success && response.data.data) {
+        setCrmSettings({
+          leadFields: response.data.data.leadFields || crmSettings.leadFields,
+          leadSources: response.data.data.leadSources || crmSettings.leadSources,
+          leadStages: response.data.data.leadStages || crmSettings.leadStages
+        });
+        setHasUnsavedChanges(false);
+      }
+    } catch (error) {
+      console.error('Error loading CRM settings:', error);
+      // Keep default settings if API fails
     } finally {
       setLoading(false);
     }
@@ -236,118 +189,8 @@ const AdminPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Toggle functions with save tracking
-  const toggleFieldActive = (fieldId) => {
-    setLeadFields(fields => 
-      fields.map(field => 
-        field.id === fieldId ? { ...field, active: !field.active } : field
-      )
-    );
-    setHasUnsavedChanges(true);
-  };
-
-  const toggleSourceActive = (sourceId) => {
-    setLeadSources(sources => 
-      sources.map(source => 
-        source.id === sourceId ? { ...source, active: !source.active } : source
-      )
-    );
-    setHasUnsavedChanges(true);
-  };
-
-  const toggleStageActive = (stageId) => {
-    setLeadStages(stages => 
-      stages.map(stage => 
-        stage.id === stageId ? { ...stage, active: !stage.active } : stage
-      )
-    );
-    setHasUnsavedChanges(true);
-  };
-
-  // Source management with save tracking
-  const handleAddSource = (e) => {
-    e.preventDefault();
-    if (newSource.label && newSource.label.trim()) {
-      const maxId = leadSources.length > 0 ? Math.max(...leadSources.map(s => s.id)) : 0;
-      const newSourceObj = {
-        id: maxId + 1,
-        value: newSource.label.toLowerCase().replace(/\s+/g, '-'),
-        label: newSource.label.trim(),
-        active: true
-      };
-      setLeadSources([...leadSources, newSourceObj]);
-      setNewSource({ label: '' });
-      setShowAddSourceForm(false);
-      setHasUnsavedChanges(true);
-    }
-  };
-
-  const handleEditSource = (sourceId) => {
-    setEditingSource(sourceId);
-  };
-
-  const handleSaveSource = (sourceId, newLabel) => {
-    if (newLabel && newLabel.trim()) {
-      setLeadSources(sources =>
-        sources.map(source =>
-          source.id === sourceId ? { ...source, label: newLabel.trim() } : source
-        )
-      );
-      setHasUnsavedChanges(true);
-    }
-    setEditingSource(null);
-  };
-
-  const handleDeleteSource = (sourceId) => {
-    if (window.confirm('Are you sure you want to delete this source?')) {
-      setLeadSources(sources => sources.filter(source => source.id !== sourceId));
-      setHasUnsavedChanges(true);
-    }
-  };
-
-  // Stage management with save tracking
-  const handleAddStage = (e) => {
-    e.preventDefault();
-    if (newStage.label && newStage.label.trim()) {
-      const maxId = leadStages.length > 0 ? Math.max(...leadStages.map(s => s.id)) : 0;
-      const newStageObj = {
-        id: maxId + 1,
-        value: newStage.label.trim(),
-        label: newStage.label.trim(),
-        active: true
-      };
-      setLeadStages([...leadStages, newStageObj]);
-      setNewStage({ label: '' });
-      setShowAddStageForm(false);
-      setHasUnsavedChanges(true);
-    }
-  };
-
-  const handleEditStage = (stageId) => {
-    setEditingStage(stageId);
-  };
-
-  const handleSaveStage = (stageId, newLabel) => {
-    if (newLabel && newLabel.trim()) {
-      setLeadStages(stages =>
-        stages.map(stage =>
-          stage.id === stageId ? { ...stage, label: newLabel.trim() } : stage
-        )
-      );
-      setHasUnsavedChanges(true);
-    }
-    setEditingStage(null);
-  };
-
-  const handleDeleteStage = (stageId) => {
-    if (window.confirm('Are you sure you want to delete this stage?')) {
-      setLeadStages(stages => stages.filter(stage => stage.id !== stageId));
-      setHasUnsavedChanges(true);
-    }
-  };
-
-  // Save all CRM customization changes to backend
-  const handleSaveCustomizations = async () => {
+  // CRM Settings functions
+  const saveCRMSettings = async () => {
     setIsSaving(true);
     setSubmitStatus(null);
 
@@ -358,15 +201,9 @@ const AdminPage = () => {
         return;
       }
 
-      const customizationData = {
-        leadFields,
-        leadSources,
-        leadStages
-      };
-
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/crm-settings`,
-        customizationData,
+        crmSettings,
         {
           headers: { 
             'x-auth-token': token,
@@ -378,68 +215,142 @@ const AdminPage = () => {
       if (response.data.success) {
         setHasUnsavedChanges(false);
         setSubmitStatus('success');
-        console.log('CRM settings saved successfully');
-      } else {
-        throw new Error(response.data.message || 'Failed to save settings');
+        setTimeout(() => setSubmitStatus(null), 3000);
       }
-      
-      setTimeout(() => setSubmitStatus(null), 3000);
     } catch (error) {
-      console.error('Error saving customizations:', error);
+      console.error('Error saving CRM settings:', error);
       setSubmitStatus('error');
-      
-      // Show specific error message if available
-      if (error.response?.data?.errors) {
-        console.error('Validation errors:', error.response.data.errors);
-      }
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDiscardChanges = async () => {
+  const discardChanges = () => {
     if (window.confirm('Are you sure you want to discard all unsaved changes?')) {
-      // Reload settings from backend
-      await fetchCRMSettings();
-      setHasUnsavedChanges(false);
+      loadCRMSettings();
     }
   };
 
-  const handleResetToDefaults = async () => {
-    if (window.confirm('Are you sure you want to reset all CRM settings to defaults? This cannot be undone.')) {
-      setIsSaving(true);
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setSubmitStatus('error');
-          return;
-        }
+  // Toggle functions
+  const toggleFieldActive = (fieldId) => {
+    setCrmSettings(prev => ({
+      ...prev,
+      leadFields: prev.leadFields.map(field => 
+        field.id === fieldId ? { ...field, active: !field.active } : field
+      )
+    }));
+    setHasUnsavedChanges(true);
+  };
 
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/crm-settings/reset`,
-          {},
-          {
-            headers: { 
-              'x-auth-token': token,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+  const toggleSourceActive = (sourceId) => {
+    setCrmSettings(prev => ({
+      ...prev,
+      leadSources: prev.leadSources.map(source => 
+        source.id === sourceId ? { ...source, active: !source.active } : source
+      )
+    }));
+    setHasUnsavedChanges(true);
+  };
 
-        if (response.data.success && response.data.data) {
-          const settings = response.data.data;
-          setLeadFields(settings.leadFields || []);
-          setLeadSources(settings.leadSources || []);
-          setLeadStages(settings.leadStages || []);
-          setHasUnsavedChanges(false);
-          setSubmitStatus('success');
-        }
-      } catch (error) {
-        console.error('Error resetting to defaults:', error);
-        setSubmitStatus('error');
-      } finally {
-        setIsSaving(false);
-      }
+  const toggleStageActive = (stageId) => {
+    setCrmSettings(prev => ({
+      ...prev,
+      leadStages: prev.leadStages.map(stage => 
+        stage.id === stageId ? { ...stage, active: !stage.active } : stage
+      )
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  // Source management
+  const addSource = (e) => {
+    e.preventDefault();
+    if (newSource.label && newSource.label.trim()) {
+      const maxId = Math.max(...crmSettings.leadSources.map(s => s.id), 0);
+      const newSourceObj = {
+        id: maxId + 1,
+        value: newSource.label.toLowerCase().replace(/\s+/g, '-'),
+        label: newSource.label.trim(),
+        active: true
+      };
+      
+      setCrmSettings(prev => ({
+        ...prev,
+        leadSources: [...prev.leadSources, newSourceObj]
+      }));
+      
+      setNewSource({ label: '' });
+      setShowAddSourceForm(false);
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const editSource = (sourceId, newLabel) => {
+    if (newLabel && newLabel.trim()) {
+      setCrmSettings(prev => ({
+        ...prev,
+        leadSources: prev.leadSources.map(source =>
+          source.id === sourceId ? { ...source, label: newLabel.trim() } : source
+        )
+      }));
+      setHasUnsavedChanges(true);
+    }
+    setEditingSource(null);
+  };
+
+  const deleteSource = (sourceId) => {
+    if (window.confirm('Are you sure you want to delete this source?')) {
+      setCrmSettings(prev => ({
+        ...prev,
+        leadSources: prev.leadSources.filter(source => source.id !== sourceId)
+      }));
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  // Stage management
+  const addStage = (e) => {
+    e.preventDefault();
+    if (newStage.label && newStage.label.trim()) {
+      const maxId = Math.max(...crmSettings.leadStages.map(s => s.id), 0);
+      const newStageObj = {
+        id: maxId + 1,
+        value: newStage.label.trim(),
+        label: newStage.label.trim(),
+        active: true
+      };
+      
+      setCrmSettings(prev => ({
+        ...prev,
+        leadStages: [...prev.leadStages, newStageObj]
+      }));
+      
+      setNewStage({ label: '' });
+      setShowAddStageForm(false);
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const editStage = (stageId, newLabel) => {
+    if (newLabel && newLabel.trim()) {
+      setCrmSettings(prev => ({
+        ...prev,
+        leadStages: prev.leadStages.map(stage =>
+          stage.id === stageId ? { ...stage, label: newLabel.trim() } : stage
+        )
+      }));
+      setHasUnsavedChanges(true);
+    }
+    setEditingStage(null);
+  };
+
+  const deleteStage = (stageId) => {
+    if (window.confirm('Are you sure you want to delete this stage?')) {
+      setCrmSettings(prev => ({
+        ...prev,
+        leadStages: prev.leadStages.filter(stage => stage.id !== stageId)
+      }));
+      setHasUnsavedChanges(true);
     }
   };
 
@@ -720,41 +631,43 @@ const AdminPage = () => {
         </div>
         
         {/* Save/Discard Buttons */}
-        {hasUnsavedChanges && (
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-sm font-medium">Unsaved changes</span>
-            </div>
-            <button
-              onClick={handleDiscardChanges}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              Discard
-            </button>
-            <button
-              onClick={handleSaveCustomizations}
-              disabled={isSaving}
-              className={`px-4 py-2 rounded-xl font-medium flex items-center space-x-2 transition-all ${
-                isSaving
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-600 to-blue-600 text-white hover:shadow-lg'
-              }`}
-            >
-              {isSaving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Save Changes</span>
-                </>
-              )}
-            </button>
-          </div>
-        )}
+        <div className="flex items-center space-x-3">
+          {hasUnsavedChanges && (
+            <>
+              <div className="flex items-center space-x-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">Unsaved changes</span>
+              </div>
+              <button
+                onClick={discardChanges}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Discard
+              </button>
+              <button
+                onClick={saveCRMSettings}
+                disabled={isSaving}
+                className={`px-4 py-2 rounded-xl font-medium flex items-center space-x-2 transition-all ${
+                  isSaving
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-blue-600 text-white hover:shadow-lg'
+                }`}
+              >
+                {isSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Success/Error Messages */}
@@ -777,7 +690,7 @@ const AdminPage = () => {
         <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
           <h4 className="font-semibold text-gray-900 mb-4">Lead Fields</h4>
           <div className="space-y-3">
-            {leadFields.map((field) => (
+            {crmSettings.leadFields.map((field) => (
               <div key={field.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <Database className="w-4 h-4 text-gray-400" />
@@ -808,7 +721,7 @@ const AdminPage = () => {
           </div>
 
           {showAddSourceForm && (
-            <form onSubmit={handleAddSource} className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <form onSubmit={addSource} className="mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="space-y-2">
                 <input
                   type="text"
@@ -841,7 +754,7 @@ const AdminPage = () => {
           )}
 
           <div className="space-y-3">
-            {leadSources.map((source) => (
+            {crmSettings.leadSources.map((source) => (
               <div key={source.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                 <div className="flex items-center space-x-3 flex-1">
                   <Building className="w-4 h-4 text-gray-400" />
@@ -850,10 +763,10 @@ const AdminPage = () => {
                       <input
                         type="text"
                         defaultValue={source.label}
-                        onBlur={(e) => handleSaveSource(source.id, e.target.value)}
+                        onBlur={(e) => editSource(source.id, e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            handleSaveSource(source.id, e.target.value);
+                            editSource(source.id, e.target.value);
                           }
                           if (e.key === 'Escape') {
                             setEditingSource(null);
@@ -873,13 +786,13 @@ const AdminPage = () => {
                     onChange={() => toggleSourceActive(source.id)}
                   />
                   <button
-                    onClick={() => handleEditSource(source.id)}
+                    onClick={() => setEditingSource(source.id)}
                     className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                   >
                     <Edit className="w-3 h-3" />
                   </button>
                   <button
-                    onClick={() => handleDeleteSource(source.id)}
+                    onClick={() => deleteSource(source.id)}
                     className="p-1 text-red-600 hover:bg-red-50 rounded"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -903,7 +816,7 @@ const AdminPage = () => {
           </div>
 
           {showAddStageForm && (
-            <form onSubmit={handleAddStage} className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <form onSubmit={addStage} className="mb-4 p-3 bg-gray-50 rounded-lg">
               <div className="space-y-2">
                 <input
                   type="text"
@@ -936,7 +849,7 @@ const AdminPage = () => {
           )}
 
           <div className="space-y-3">
-            {leadStages.map((stage) => (
+            {crmSettings.leadStages.map((stage) => (
               <div key={stage.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                 <div className="flex items-center space-x-3 flex-1">
                   <Settings className="w-4 h-4 text-gray-400" />
@@ -945,10 +858,10 @@ const AdminPage = () => {
                       <input
                         type="text"
                         defaultValue={stage.label}
-                        onBlur={(e) => handleSaveStage(stage.id, e.target.value)}
+                        onBlur={(e) => editStage(stage.id, e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            handleSaveStage(stage.id, e.target.value);
+                            editStage(stage.id, e.target.value);
                           }
                           if (e.key === 'Escape') {
                             setEditingStage(null);
@@ -968,13 +881,13 @@ const AdminPage = () => {
                     onChange={() => toggleStageActive(stage.id)}
                   />
                   <button
-                    onClick={() => handleEditStage(stage.id)}
+                    onClick={() => setEditingStage(stage.id)}
                     className="p-1 text-green-600 hover:bg-green-50 rounded"
                   >
                     <Edit className="w-3 h-3" />
                   </button>
                   <button
-                    onClick={() => handleDeleteStage(stage.id)}
+                    onClick={() => deleteStage(stage.id)}
                     className="p-1 text-red-600 hover:bg-red-50 rounded"
                   >
                     <Trash2 className="w-3 h-3" />
