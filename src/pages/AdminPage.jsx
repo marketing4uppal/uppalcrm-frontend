@@ -1,5 +1,5 @@
-// src/pages/AdminPage.jsx - Simplified and Robust Version
-import React, { useState, useEffect } from 'react';
+// src/pages/AdminPage.jsx - Fixed Version
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -54,7 +54,7 @@ const AdminPage = () => {
   // CRM Settings state - simplified
   const [crmSettings, setCrmSettings] = useState({
     leadFields: [
-      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true }, // Changed to optional
+      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true },
       { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },
       { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true },
       { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true },
@@ -89,6 +89,24 @@ const AdminPage = () => {
       loadCRMSettings();
     }
   }, [activeTab]);
+
+  // FIXED: Memoized event handlers to prevent re-renders
+  const handleInputChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleSearchChange = useCallback((e) => {
+    setSearchTerm(e.target.value);
+  }, []);
+
+  const handleNewSourceChange = useCallback((e) => {
+    setNewSource({ label: e.target.value });
+  }, []);
+
+  const handleNewStageChange = useCallback((e) => {
+    setNewStage({ label: e.target.value });
+  }, []);
 
   // API Functions
   const fetchUsers = async () => {
@@ -182,11 +200,6 @@ const AdminPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Form handlers
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   // CRM Settings functions
@@ -548,7 +561,7 @@ const AdminPage = () => {
           type="text"
           placeholder="Search users..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchChange}
           className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
@@ -727,7 +740,7 @@ const AdminPage = () => {
                   type="text"
                   placeholder="Source label (e.g., LinkedIn)"
                   value={newSource.label}
-                  onChange={(e) => setNewSource({ label: e.target.value })}
+                  onChange={handleNewSourceChange}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -822,7 +835,7 @@ const AdminPage = () => {
                   type="text"
                   placeholder="Stage label (e.g., Follow-up)"
                   value={newStage.label}
-                  onChange={(e) => setNewStage({ label: e.target.value })}
+                  onChange={handleNewStageChange}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
