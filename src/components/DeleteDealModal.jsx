@@ -37,11 +37,12 @@ const DeleteDealModal = ({ deal, isOpen, onClose, onDelete }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/deals/${deal._id}/delete-info`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/delete-info`, {
+  headers: {
+    'x-auth-token': token,
+    'Content-Type': 'application/json'
+  }
+});
       setDeleteInfo(response.data);
     } catch (error) {
       console.error('Error fetching deal delete info:', error);

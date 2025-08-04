@@ -40,9 +40,10 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/delete-info`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+       headers: {
+  'x-auth-token': token,
+  'Content-Type': 'application/json'
+}
       });
       setDeleteInfo(response.data);
     } catch (error) {
@@ -78,14 +79,15 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
       }
       
       await axios.post(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/soft-delete`, {
-        reason: formData.reason,
-        notes: formData.notes,
-        contactAction: formData.contactAction
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+  reason: formData.reason,
+  notes: formData.notes,
+  contactAction: formData.contactAction
+}, {
+  headers: {
+    'x-auth-token': token,
+    'Content-Type': 'application/json'
+  }
+});
       
       onDelete(lead._id, formData.contactAction);
       onClose();
