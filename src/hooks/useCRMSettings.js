@@ -1,4 +1,4 @@
-// src/hooks/useCRMSettings.js - FIXED VERSION
+// src/hooks/useCRMSettings.js - FINAL VERSION
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -16,6 +16,14 @@ export const useCRMSettings = () => {
   const fetchCRMSettings = async () => {
     try {
       setLoading(true);
+      
+      // FORCE FALLBACK VALUES FOR NOW (until API is properly set up)
+      console.log('🔍 Using fallback values with only Last Name required');
+      setFallbackValues();
+      return;
+      
+      // API call code (commented out until backend is fixed):
+      /*
       const token = localStorage.getItem('token');
       
       if (!token) {
@@ -37,7 +45,6 @@ export const useCRMSettings = () => {
       if (response.data.success && response.data.data) {
         const settings = response.data.data;
         
-        // Set data from API
         setLeadSources(settings.leadSources?.filter(source => source.active) || []);
         setLeadStages(settings.leadStages?.filter(stage => stage.active).sort((a, b) => a.order - b.order) || []);
         setLeadFields(settings.leadFields?.filter(field => field.active) || []);
@@ -48,6 +55,8 @@ export const useCRMSettings = () => {
         console.log('🔍 API response invalid, using fallback values');
         setFallbackValues();
       }
+      */
+      
     } catch (err) {
       console.error('🔍 Error fetching CRM settings:', err);
       setError('Failed to load CRM settings');
@@ -58,7 +67,7 @@ export const useCRMSettings = () => {
   };
 
   const setFallbackValues = () => {
-    console.log('🔍 Setting fallback values with corrected requirements');
+    console.log('🔍 Setting fallback values - ONLY LAST NAME REQUIRED');
     
     const fallbackLeadSources = [
       { id: 1, value: 'website', label: 'Website' },
@@ -78,21 +87,25 @@ export const useCRMSettings = () => {
       { id: 5, value: 'Lost', label: 'Lost' }
     ];
     
+    // CORRECTED: Only Last Name is required
     const fallbackLeadFields = [
-      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false }, // FALSE
-      { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true },   // TRUE
-      { id: 3, name: 'email', label: 'Email', type: 'email', required: false },        // FALSE
-      { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false },
-      { id: 5, name: 'company', label: 'Company', type: 'text', required: false },
-      { id: 6, name: 'jobTitle', label: 'Job Title', type: 'text', required: false },
-      { id: 7, name: 'leadSource', label: 'Lead Source', type: 'select', required: false }
+      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true },     // ❌ NOT REQUIRED
+      { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },       // ✅ REQUIRED
+      { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true },            // ❌ NOT REQUIRED
+      { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true },              // ❌ NOT REQUIRED
+      { id: 5, name: 'company', label: 'Company', type: 'text', required: false, active: true },         // ❌ NOT REQUIRED
+      { id: 6, name: 'jobTitle', label: 'Job Title', type: 'text', required: false, active: true },      // ❌ NOT REQUIRED
+      { id: 7, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true } // ❌ NOT REQUIRED
     ];
 
     setLeadSources(fallbackLeadSources);
     setLeadStages(fallbackLeadStages);
     setLeadFields(fallbackLeadFields);
     
-    console.log('🔍 Fallback leadFields set:', fallbackLeadFields);
+    console.log('✅ Fallback leadFields set with corrected requirements:', fallbackLeadFields);
+    console.log('✅ First Name required:', fallbackLeadFields.find(f => f.name === 'firstName')?.required);
+    console.log('✅ Last Name required:', fallbackLeadFields.find(f => f.name === 'lastName')?.required);
+    console.log('✅ Email required:', fallbackLeadFields.find(f => f.name === 'email')?.required);
   };
 
   // Helper functions
@@ -109,7 +122,7 @@ export const useCRMSettings = () => {
   
   const isFieldActive = (fieldName) => {
     const field = leadFields.find(f => f.name === fieldName);
-    return field?.active !== false; // Default to true if not specified
+    return field?.active !== false;
   };
   
   const getFieldConfig = (fieldName) => {
