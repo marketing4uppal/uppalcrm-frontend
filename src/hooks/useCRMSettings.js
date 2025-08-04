@@ -61,7 +61,7 @@ export const useCRMSettings = () => {
       ]);
       
       setLeadFields([
-        { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: true },
+        { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false }, // CHANGED: Made optional
         { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true },
         { id: 3, name: 'email', label: 'Email', type: 'email', required: false },
         { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false },

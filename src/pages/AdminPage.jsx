@@ -54,7 +54,7 @@ const AdminPage = () => {
   // CRM Settings state - simplified
   const [crmSettings, setCrmSettings] = useState({
     leadFields: [
-      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: true, active: true },
+      { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true }, // Changed to optional
       { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },
       { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true },
       { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true },
