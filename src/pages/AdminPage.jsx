@@ -58,7 +58,7 @@ const AdminPage = () => {
   const [leadFields, setLeadFields] = useState([
     { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: true, active: true },
     { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true },
-    { id: 3, name: 'email', label: 'Email', type: 'email', required: true, active: true },
+    { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true },
     { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true },
     { id: 5, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true }
   ]);

@@ -118,7 +118,7 @@ const LeadForm = () => {
         {/* Email */}
         <div>
           <label className={labelClass}>
-            Email Address <span className="text-red-500">*</span>
+            Email Address 
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -127,7 +127,6 @@ const LeadForm = () => {
               name="email"
               value={email}
               onChange={onChange}
-              required
               placeholder="Enter email address"
               className={inputClass}
             />
