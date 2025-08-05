@@ -189,7 +189,6 @@ const LeadEditModal = ({ isOpen, onClose, leadId, onLeadUpdated }) => {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      required
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="First name"
                     />

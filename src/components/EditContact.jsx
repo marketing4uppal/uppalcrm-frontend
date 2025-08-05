@@ -88,7 +88,7 @@ const EditContact = ({ contact, onClose, onUpdate }) => {
           {/* First Name */}
           <div>
             <label className={labelClass}>
-              First Name <span className="text-red-500">*</span>
+              First Name 
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -97,7 +97,6 @@ const EditContact = ({ contact, onClose, onUpdate }) => {
                 name="firstName"
                 value={firstName}
                 onChange={onChange}
-                required
                 placeholder="Enter first name"
                 className={inputClass}
               />
