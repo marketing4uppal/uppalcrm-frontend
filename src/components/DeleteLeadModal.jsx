@@ -68,37 +68,69 @@ const DeleteLeadModal = ({ lead, isOpen, onClose, onDelete }) => {
     }
   };
 
-  const handleDelete = async () => {
-    try {
-      setLoading(true);
-      
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in again');
-        return;
-      }
-      
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/leads/${lead._id}/soft-delete`, {
-  reason: formData.reason,
-  notes: formData.notes,
-  contactAction: formData.contactAction
-}, {
-  headers: {
-    'x-auth-token': token,
-    'Content-Type': 'application/json'
-  }
-});
-      
-      onDelete(lead._id, formData.contactAction);
-      onClose();
-      
-    } catch (error) {
-      console.error('Error deleting lead:', error);
-      alert('Error deleting lead: ' + (error.response?.data?.error || error.message));
-    } finally {
-      setLoading(false);
+// Replace your handleDelete function in DeleteLeadModal.jsx with this temporarily:
+
+const handleDelete = async () => {
+  try {
+    setLoading(true);
+    
+    const token = localStorage.getItem('token');
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const leadId = lead._id;
+    const fullUrl = `${apiUrl}/api/leads/${leadId}/soft-delete`;
+    
+    // DEBUG LOGS
+    console.log('🔍 DELETE DEBUG INFO:');
+    console.log('API URL:', apiUrl);
+    console.log('Lead ID:', leadId);
+    console.log('Full URL:', fullUrl);
+    console.log('Token exists:', !!token);
+    console.log('Form data:', formData);
+    
+    if (!token) {
+      alert('Please log in again');
+      return;
     }
-  };
+    
+    // Test if the lead exists first
+    console.log('🧪 Testing if lead exists...');
+    const leadCheck = await axios.get(`${apiUrl}/api/leads/${leadId}`, {
+      headers: { 'x-auth-token': token }
+    });
+    console.log('✅ Lead exists:', leadCheck.data);
+    
+    // Now try the delete
+    console.log('🗑️ Attempting delete...');
+    const deleteResponse = await axios.post(fullUrl, {
+      reason: formData.reason,
+      notes: formData.notes,
+      contactAction: formData.contactAction
+    }, {
+      headers: {
+        'x-auth-token': token,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('✅ Delete successful:', deleteResponse.data);
+    onDelete(lead._id, formData.contactAction);
+    onClose();
+    
+  } catch (error) {
+    console.error('❌ DELETE ERROR:');
+    console.error('Error type:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Status:', error.response?.status);
+    console.error('Status text:', error.response?.statusText);
+    console.error('Response data:', error.response?.data);
+    console.error('Request URL:', error.config?.url);
+    console.error('Request method:', error.config?.method);
+    
+    alert(`Error deleting lead: ${error.response?.status} ${error.response?.statusText}\n${error.response?.data?.error || error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const canProceed = () => {
     if (step === 1) return formData.reason;
