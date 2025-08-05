@@ -64,13 +64,13 @@ export const useCRMSettings = () => {
   };
 
   const getFallbackLeadFields = () => [
-    { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true, isCustom: false },
-    { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true, isCustom: false },
-    { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true, isCustom: false },
-    { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true, isCustom: false },
-    { id: 5, name: 'company', label: 'Company', type: 'text', required: false, active: true, isCustom: false },
-    { id: 6, name: 'jobTitle', label: 'Job Title', type: 'text', required: false, active: true, isCustom: false },
-    { id: 7, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true, isCustom: false }
+    { id: 1, name: 'firstName', label: 'First Name', type: 'text', required: false, active: true, isCustom: false },     // ✅ NOT REQUIRED
+    { id: 2, name: 'lastName', label: 'Last Name', type: 'text', required: true, active: true, isCustom: false },       // ✅ REQUIRED (only this one)
+    { id: 3, name: 'email', label: 'Email', type: 'email', required: false, active: true, isCustom: false },            // ✅ NOT REQUIRED
+    { id: 4, name: 'phone', label: 'Phone', type: 'tel', required: false, active: true, isCustom: false },              // ✅ NOT REQUIRED
+    { id: 5, name: 'company', label: 'Company', type: 'text', required: false, active: true, isCustom: false },         // ✅ NOT REQUIRED
+    { id: 6, name: 'jobTitle', label: 'Job Title', type: 'text', required: false, active: true, isCustom: false },      // ✅ NOT REQUIRED
+    { id: 7, name: 'leadSource', label: 'Lead Source', type: 'select', required: false, active: true, isCustom: false } // ✅ NOT REQUIRED
   ];
 
   const getFallbackLeadSources = () => [
