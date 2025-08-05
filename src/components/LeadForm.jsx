@@ -6,6 +6,9 @@ import { useCRMSettings } from '../hooks/useCRMSettings';
 
 const LeadForm = () => {
   const { leadSources, leadFields, loading: settingsLoading, error: settingsError } = useCRMSettings();
+   // HOTFIX: Add extensive debugging
+  console.log('🔍 HOTFIX DEBUG - leadFields from useCRMSettings:', leadFields);
+  console.log('🔍 HOTFIX DEBUG - leadFields length:', leadFields.length);
 
 // ADD THIS DEBUG CODE:
 console.log('🔍 DEBUG - leadFields from useCRMSettings:', leadFields);
