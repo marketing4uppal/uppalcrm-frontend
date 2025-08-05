@@ -1,4 +1,4 @@
-// src/pages/AdminPage.jsx - Main admin page (simplified)
+// src/pages/AdminPage.jsx - Simplified modular version
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Sliders, ArrowLeft } from 'lucide-react';
