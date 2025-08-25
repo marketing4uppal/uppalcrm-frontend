@@ -1,4 +1,4 @@
-// src/App.jsx (Original - go back to this)
+// src/App.jsx (Updated to include PublicPage)
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import setAuthToken from './utils/setAuthToken';
@@ -7,6 +7,7 @@ import axios from 'axios';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
+import PublicPage from './pages/PublicPage'; // NEW IMPORT
 import { CircularProgress, Box } from '@mui/material';
 
 if (localStorage.token) {
@@ -21,7 +22,12 @@ const AdminRoute = ({ user, children }) => {
   if (user && user.role === 'admin') {
     return children;
   }
-  return <Navigate to="/" />;
+  return <Navigate to="/dashboard" />; // Changed from "/" to "/dashboard"
+};
+
+// NEW: Public Route - only show if user is NOT logged in
+const PublicRoute = ({ children }) => {
+  return localStorage.token ? <Navigate to="/dashboard" /> : children;
 };
 
 function App() {
@@ -51,33 +57,47 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        {/* NEW: Public landing page - only accessible when not logged in */}
+        <Route 
+          path="/" 
+          element={
+            <PublicRoute>
+              <PublicPage />
+            </PublicRoute>
+          } 
+        />
+        
+        {/* Keep your existing login page */}
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          } 
+        />
+        
+        {/* Dashboard - default page for logged-in users */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <PrivateRoute>
               <DashboardPage user={user} />
             </PrivateRoute>
           }
         />
+        
+        {/* Admin page */}
         <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute>
-            <DashboardPage user={user} />
-          </PrivateRoute>
-        }
-      />
-    <Route
-  path="/admin"
-  element={
-    <PrivateRoute>
-      <AdminRoute user={user}>
-        <AdminPage />
-      </AdminRoute>
-    </PrivateRoute>
-  }
-/>
+          path="/admin"
+          element={
+            <PrivateRoute>
+              <AdminRoute user={user}>
+                <AdminPage />
+              </AdminRoute>
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );
