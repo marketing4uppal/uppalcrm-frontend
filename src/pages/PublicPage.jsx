@@ -127,7 +127,7 @@ const CRMPublicPage = () => {
 
   // Landing Page Component
   const LandingPage = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-x-hidden max-w-full">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -367,7 +367,7 @@ const CRMPublicPage = () => {
 
   // Login Component
   const LoginPage = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 overflow-x-hidden max-w-full">
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
@@ -479,7 +479,7 @@ const CRMPublicPage = () => {
 
   // Register Component
   const RegisterPage = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 overflow-x-hidden max-w-full">
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
