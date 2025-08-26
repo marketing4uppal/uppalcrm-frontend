@@ -86,10 +86,10 @@ const CRMPublicPage = () => {
   };
 
   const LandingPage = () => (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-x-hidden">
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 w-screen">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-none">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
@@ -119,8 +119,8 @@ const CRMPublicPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-16 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+      <section className="pt-20 pb-16 w-screen">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-none">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full max-w-7xl mx-auto">
             <div className="w-full">
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6 leading-tight">
@@ -182,8 +182,8 @@ const CRMPublicPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-white w-screen">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-none">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h3 className="text-3xl font-bold text-gray-900 mb-4">Everything You Need to Succeed</h3>
@@ -244,8 +244,8 @@ const CRMPublicPage = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 w-screen">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-none">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 w-full">
               {[
@@ -268,7 +268,7 @@ const CRMPublicPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gray-50 w-full">
+      <section className="py-16 bg-gray-50 w-screen">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex justify-center mb-6">
             <Award className="w-16 h-16 text-yellow-500" />
@@ -287,8 +287,8 @@ const CRMPublicPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+      <footer className="bg-gray-900 text-white py-12 w-screen">
+        <div className="w-full px-4 sm:px-6 lg:px-8 max-w-none">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 w-full">
               <div className="col-span-1 md:col-span-2">
@@ -331,7 +331,7 @@ const CRMPublicPage = () => {
   );
 
   const LoginPage = () => (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <button 
@@ -439,7 +439,7 @@ const CRMPublicPage = () => {
   );
 
   const RegisterPage = () => (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <button 
