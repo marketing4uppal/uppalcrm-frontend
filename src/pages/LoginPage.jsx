@@ -1,4 +1,4 @@
-// src/components/Login.jsx - FIXED VERSION
+// src/components/Login.jsx - FIXED VERSION (Using Lucide Icons)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -13,11 +13,11 @@ import {
   IconButton
 } from '@mui/material';
 import { 
-  Visibility, 
-  VisibilityOff, 
-  Email, 
+  Eye, 
+  EyeOff, 
+  Mail, 
   Lock 
-} from '@mui/icons-material';
+} from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate(); // ✅ CRITICAL: React Router navigation hook
@@ -110,6 +110,12 @@ const Login = () => {
     }
   };
 
+  // Custom icon components for Material UI compatibility
+  const MailIcon = () => <Mail size={20} style={{ color: '#666' }} />;
+  const LockIcon = () => <Lock size={20} style={{ color: '#666' }} />;
+  const EyeIcon = () => <Eye size={20} style={{ color: '#666' }} />;
+  const EyeOffIcon = () => <EyeOff size={20} style={{ color: '#666' }} />;
+
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
       <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
@@ -146,7 +152,7 @@ const Login = () => {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Email color="action" />
+              <MailIcon />
             </InputAdornment>
           ),
         }}
@@ -169,7 +175,7 @@ const Login = () => {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Lock color="action" />
+              <LockIcon />
             </InputAdornment>
           ),
           endAdornment: (
@@ -180,7 +186,7 @@ const Login = () => {
                 edge="end"
                 disabled={loading}
               >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </IconButton>
             </InputAdornment>
           ),
