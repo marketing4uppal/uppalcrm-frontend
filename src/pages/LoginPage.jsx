@@ -1,4 +1,4 @@
-// src/components/Login.jsx - DEBUG VERSION
+// src/components/Login.jsx - FIXED VERSION WITH AUTOMATIC REDIRECT
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -37,7 +37,7 @@ const Login = () => {
     const token = localStorage.getItem('token');
     if (token) {
       console.log('🔍 Token found in localStorage:', token.substring(0, 20) + '...');
-      setDebugInfo('Token found - should redirect to dashboard');
+      setDebugInfo('Token found - redirecting to dashboard');
       // If there's already a token, redirect to dashboard
       window.location.href = '/dashboard';
     } else {
@@ -65,6 +65,7 @@ const Login = () => {
     try {
       console.log('📡 Sending login request...');
       setDebugInfo('Sending login request to server...');
+      setSuccess('Login successful! Redirecting...');
       
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/login`, 
@@ -92,43 +93,19 @@ const Login = () => {
         if (storedToken) {
           console.log('✅ Token verified in localStorage');
           setDebugInfo('Token stored successfully - redirecting...');
+          setSuccess('Login successful! Redirecting to dashboard...');
         } else {
           console.error('❌ Token NOT stored in localStorage');
           setDebugInfo('ERROR: Token not stored!');
           throw new Error('Failed to store token');
         }
         
-        setSuccess('Login successful! Redirecting to dashboard...');
-        
-        // MULTIPLE REDIRECT ATTEMPTS WITH DEBUGGING
-        console.log('🔄 Starting redirect process...');
+        // 🔥 FIXED AUTOMATIC REDIRECT - Use the same method as the manual button
+        console.log('🔄 Starting automatic redirect...');
         console.log('🔍 Current pathname before redirect:', window.location.pathname);
         
-        // Method 1: Immediate redirect
-        console.log('🔄 Method 1: window.location.href');
-        setDebugInfo('Attempting redirect method 1...');
+        // Use the exact same method that works for the manual button
         window.location.href = '/dashboard';
-        
-        // Method 2: Backup after 100ms
-        setTimeout(() => {
-          console.log('🔄 Method 2: window.location.replace (backup)');
-          setDebugInfo('Attempting redirect method 2...');
-          window.location.replace('/dashboard');
-        }, 100);
-        
-        // Method 3: Nuclear option after 500ms
-        setTimeout(() => {
-          console.log('🔄 Method 3: window.location.assign (nuclear)');
-          setDebugInfo('Attempting redirect method 3...');
-          window.location.assign('/dashboard');
-        }, 500);
-        
-        // Method 4: Force page reload after 1 second
-        setTimeout(() => {
-          console.log('🔄 Method 4: Force page reload');
-          setDebugInfo('Force reloading page to dashboard...');
-          window.location = '/dashboard';
-        }, 1000);
         
         return; // Stop execution
         
