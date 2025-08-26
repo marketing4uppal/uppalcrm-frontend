@@ -1,4 +1,4 @@
-// src/components/Login.jsx - FIXED VERSION (Using Lucide Icons)
+// src/components/Login.jsx - FINAL FIXED VERSION
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 const Login = () => {
-  const navigate = useNavigate(); // ✅ CRITICAL: React Router navigation hook
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -59,31 +59,13 @@ const Login = () => {
         // Store the token
         localStorage.setItem('token', response.data.token);
         
-        console.log('Login successful, redirecting...');
+        console.log('Login successful! Redirecting to dashboard...');
         
-        // ✅ BULLETPROOF REDIRECT - Multiple fallback methods
+        // ✅ SIMPLE & RELIABLE REDIRECT - Skip React Router, use direct redirect
+        window.location.href = '/dashboard';
         
-        // Method 1: React Router navigation (preferred)
-        try {
-          console.log('Attempting React Router navigate...');
-          navigate('/dashboard', { replace: true });
-          
-          // Add a small delay to ensure navigation completes
-          setTimeout(() => {
-            // If we're still on the login page after navigation, force redirect
-            if (window.location.pathname.includes('login') || window.location.pathname === '/') {
-              console.log('React Router failed, using window.location fallback');
-              window.location.href = '/dashboard';
-            }
-          }, 500);
-          
-        } catch (navError) {
-          console.warn('React Router navigate failed:', navError);
-          
-          // Method 2: Direct window location (immediate fallback)
-          console.log('Using window.location.href fallback');
-          window.location.href = '/dashboard';
-        }
+        // Prevent any further code execution
+        return;
         
       } else {
         throw new Error('No token received from server');
